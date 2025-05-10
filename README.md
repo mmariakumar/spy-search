@@ -1,4 +1,4 @@
-# renassiance-search
+# Spy search
 An AI engine searcher perform better than and faster than perplexity
 
 ## v0.1 
