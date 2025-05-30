@@ -3,7 +3,7 @@ from abc import ABC , abstractmethod
 class Model(ABC):
     """
         This is an abstraction class for models
-        Model can be any LLM or Embedding Model  
+        Model can be any LLM or VLM 
     """
     @abstractmethod
     def __init__(self):
