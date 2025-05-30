@@ -1,10 +1,5 @@
-from ollama import chat
+from src.model.ollama import Ollama
 
-stream = chat(
-    model='llama3.2',
-    messages=[{'role': 'user', 'content': 'Why is the sky blue?'}],
-    stream=True,
-)
-
-for chunk in stream:
-  print(chunk['message']['content'], end='', flush=True)
+o = Ollama(model="deepseek-r1:1.5b")
+res = o.completion("test message" , stream=True)
+print(res)
