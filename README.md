@@ -8,13 +8,13 @@ An AI engine searcher perform better than and faster than perplexity
 
 ## v0.2 
 - [] RAG with local document
-- [] Cache with the search result in the local network 
 - [] Complex work flow
 - [] Add terminal executor
 
 ## v0.3 
 - [] Chart Display
 - [] Better report generation
+- [] Docker
 
 ## v0.4
 - [] UI with react
