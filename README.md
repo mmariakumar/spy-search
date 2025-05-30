@@ -2,8 +2,8 @@
 An AI engine searcher perform better than and faster than perplexity
 
 ## v0.1 
-- [] Web search 
-- [] Chat wiht LLM 
+- [x] Web search 
+- [x] Chat wiht LLM 
 - [] RAG with the web search result
 
 ## v0.2 
