@@ -10,6 +10,7 @@ An AI engine searcher perform better than and faster than perplexity
 - [] RAG with local document
 - [] Cache with the search result in the local network 
 - [] Complex work flow
+- [] Add terminal executor
 
 ## v0.3 
 - [] Chart Display
