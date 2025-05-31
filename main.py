@@ -1,8 +1,4 @@
-from src.agent.retrival_agent import RAG_agent
-from src.model.ollama import Ollama
+from src.model.gemini import Gemini
 
-m = Ollama("deepseek-r1:1.5b")
-
-a = RAG_agent(m)
-
-print(a.run("Search prompble relaterd to tesla "))
+g = Gemini("gemini-2.5-flash")
+print(g.completion("what is ai"))

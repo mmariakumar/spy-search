@@ -6,14 +6,14 @@ def retrival_agent_prompt(tool_list , task):
 
             **Tools description:**  
             - **Add_document**:  
-            - Arguments: `documents: str`, `id: str`  
-            - Function: Adds a document to the collection, enabling future retrieval.  
+                - Arguments: `documents: str`, `id: str`  
+                - Function: Adds a document to the collection, enabling future retrieval.  
             - **Query**:  
-            - Arguments: `query: str`, `k: int` (number of results to return)  
-            - Function: Searches the database and returns up to `k` relevant results.  
+                - Arguments: `query: str`, `k: int` (number of results to return)  
+                - Function: Searches the database and returns up to `k` relevant results.  
             - **Reset**:  
-            - Arguments: None  
-            - Function: Resets the entire database.
+                - Arguments: None  
+                - Function: Resets the entire database.
 
             ---
 
@@ -27,7 +27,7 @@ def retrival_agent_prompt(tool_list , task):
             ```json
                 {{
                     "tool": "<your-selected-tool>",
-                    "args": ["arguments"]
+                    "args": [<You should put the argument inside for example if tool is query it should be query:"query here" , "k":number here>]
                 }}
             ```
             If the task is outside your responsibility, respond with:
