@@ -7,7 +7,7 @@ class Ollama(Model):
         self.message = [] 
     
     def completion(self, message:str , stream:str=False):
-        self._append_message(message=message , role="use")
+        self._append_message(message=message , role="user")
         msg_cache = "" 
         if stream == False:
             res = chat(model=self.model , messages = self.message , stream=False)

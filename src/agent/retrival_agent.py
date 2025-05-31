@@ -1,0 +1,26 @@
+from ..RAG.chrome import VectorSearch
+from .agent import Agent
+from ..prompt import retrival_agent_prompt
+
+import json 
+
+class RAG_agent(Agent):
+    """
+        RAG Agent should able to do search relevant content given a query
+        It should also have it's own database for search relevant content and also chacing recent result
+        Args:
+            model: a LLM model
+            path: db path , default "./db"
+    """
+    def __init__(self, model , path:str = "./db"):
+        self.model = model        
+        self.db= VectorSearch(path=path) 
+        self.tool_list = ["Add_document" , "Query" , "Reset"]
+        
+
+    def run(self , task):
+        self.task = task
+        self.prompt =retrival_agent_prompt(self.tool_list , task=task) 
+        res = self.model.completion(self.prompt)
+        return res 
+    
