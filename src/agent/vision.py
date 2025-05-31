@@ -3,4 +3,4 @@ class Vision:
         pass
 
     def run(self):
-        pass 
+        pass

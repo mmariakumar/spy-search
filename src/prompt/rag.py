@@ -1,4 +1,4 @@
-def retrival_agent_prompt(tool_list , task):
+def retrival_agent_prompt(tool_list, task):
     return f"""
             You are the best searching agent on this planet.  
             You have access to the following tools:  

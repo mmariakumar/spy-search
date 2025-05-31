@@ -1,5 +1,23 @@
-# Spy search
-An AI engine searcher perform better than and faster than perplexity
+# Spy Search
+
+**Spy Search** is an agentic search framework designed to outperform current web search agents with a focus on faster, more efficient daily usage.
+
+While commercial solutions like Manus charge $200 per month, Spy Search leverages open-source models to provide a cost-effective alternative without sacrificing performance.
+
+---
+
+## Roadmap
+
+- **Version 1.0:** Agentic Search Functionality  
+- **Version 2.0:** Localized Cache to Accelerate Search Speed  
+
+---
+
+## Contribution
+
+We welcome contributions of all kinds! Please note that Spy Search is currently in a rapid development phase focused on performance optimization. As a result, the codebase is evolving quickly and may undergo significant changes.
+
+Join us in building the future of fast, affordable search!
 
 ## v0.1 Finish (30/5)
 - [x] Web search 
@@ -9,7 +27,7 @@ An AI engine searcher perform better than and faster than perplexity
 ## v0.2 
 - [] RAG with local document
 - [] Complex work flow
-- [] Add terminal executor
+- [x] Add terminal executor
 
 ## v0.3 
 - [] Chart Display
