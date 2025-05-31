@@ -1,14 +1,16 @@
-from abc import ABC , abstractmethod
+from abc import ABC, abstractmethod
+
 
 class Model(ABC):
     """
-        This is an abstraction class for models
-        Model can be any LLM or VLM 
+    This is an abstraction class for models
+    Model can be any LLM or VLM
     """
+
     @abstractmethod
     def __init__(self):
-        pass 
-    
+        pass
+
     """
         Completion is 
         Args:
@@ -16,6 +18,7 @@ class Model(ABC):
         Output:
             return a string response
     """
+
     @abstractmethod
-    def completion(self, query:str)-> str:
+    def completion(self, query: str) -> str:
         pass

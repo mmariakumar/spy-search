@@ -1,4 +1,6 @@
-def planner_agent_prompt(agent_list: list[str], agent_description: list[str], task: str) -> str:
+def planner_agent_prompt(
+    agent_list: list[str], agent_description: list[str], task: str
+) -> str:
     prompt = f"""
         You are the world's most exceptional project manager, entrusted with orchestrating the perfect plan to accomplish the following task:
 
