@@ -1,5 +1,8 @@
+from src.agent.retrival_agent import RAG_agent
 from src.model.ollama import Ollama
 
-o = Ollama(model="deepseek-r1:1.5b")
-res = o.completion("test message" , stream=True)
-print(res)
+m = Ollama("deepseek-r1:1.5b")
+
+a = RAG_agent(m)
+
+print(a.run("Search prompble relaterd to tesla "))
