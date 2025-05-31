@@ -64,7 +64,6 @@ class Agent(ABC):
                     candidate = res[start_pos:end_pos + 1].strip()
                     json_candidates.append(candidate)
                 start_idx = start_pos + 1
-        
         for candidate in reversed(json_candidates):
             try:
                 json.loads(candidate)
