@@ -3,9 +3,24 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 
 import time
+import random
 
 """
     Browser class should provide every kinds of interation allow to model to choose which action to perform
+
+    Brower should have the follwoing methods 
+    - Scroll Up 
+    - Scrool Down 
+    - Access specific link
+    - Print Screen
+    - Access to next page
+    - print screen
+    - get text from the current web page []
+    - switch tab [done , refactor need]
+    - open multiple tab [done] 
+    - next page [done] 
+    - previous page [done]
+
 """
 class Browser:
     GOOGLE_URL = "https://google.com/"
@@ -30,28 +45,49 @@ class Browser:
         time.sleep(1.5)  # avoid bot detection
         search_bar.send_keys(Keys.RETURN)
         time.sleep(3)
-        links = self.driver.find_elements("tag name", "a")
-        for link in links:
-            href = link.get_attribute("href")
-            title = link.text.strip()  # Text inside the <a> tag
-            if href:
-                print(f"Title: {title} | Href: {href}")
 
-        # how to get information with browser 
-        # do we need vllm here  ? 
+        element = self.driver.find_element(By.TAG_NAME , "body")
+        # we have to use beautiful soup here
+        print(element.text)
+
+
+    def get_content(self):
+        pass #TODO
+
+    def switch_tab(self , n:int):
+        all_tabls = self._get_all_handler()
+        self.driver.switch_to.window(all_tabls[n])
+    
+    def new_tab(self):
+        self.driver.switch_to.new_window('tab')
+        self.driver.get("https://google.com") #default set to be google 
 
     def next_page(self):
-        pass 
+        time.sleep(random.random()*3)
+        self.driver.forward()
 
     def prev_page(self):
-        pass 
-        
-        
+        time.sleep(random.random()*3) # one to three seconds random
+        self.driver.back()
+
+    def access_url(self , url):
+        self.driver.get(url)
+
     def CloseDriver(self):
         self.driver.close()
+
+    def _get_all_handler(self):
+        # maybe we have to refactor here such that a map {description : tab name}
+        all_handler = self.driver.window_handles
+        return all_handler
 
 
 if __name__ == "__main__":
     b = Browser()
     b.GoogleSearch("tesla")
+    time.sleep(3)
+    b.new_tab()
+    time.sleep(3)
+    b.switch_tab(0)
+    time.sleep(1)
     b.CloseDriver()
