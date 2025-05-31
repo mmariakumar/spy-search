@@ -9,7 +9,7 @@ An AI engine searcher perform better than and faster than perplexity
 ## v0.2 
 - [] RAG with local document
 - [] Complex work flow
-- [] Add terminal executor
+- [x] Add terminal executor
 
 ## v0.3 
 - [] Chart Display
