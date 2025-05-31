@@ -5,5 +5,5 @@ class Search_agent(Agent):
     def __init__(self, model):
         self.model = model
 
-    def run():
-        pass
+    def run(self , task)-> str:
+        return ""
