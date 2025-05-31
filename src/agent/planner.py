@@ -18,10 +18,12 @@ class Planner(Agent):
         prompt = planner_agent_prompt(list(self._output_model.keys()) , list(self._output_model.values()) , self.query)
         res = self._model.completion(prompt)
         print(res)
-        return res
+        json_response = self._extract_response(res)
+        return json_response
     
-    def _add_model(self , model , description):
+    def add_model(self , model , description):
         self._output_model[model] = description
+    
 
 
 

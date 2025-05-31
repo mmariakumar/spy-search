@@ -24,27 +24,9 @@ class RAG_agent(Agent):
         self.prompt =retrival_agent_prompt(self.tool_list , task=task) 
         res = self.model.completion(self.prompt)
         json_res = self._extract_response(res)
-        self._json_handler(json_res)
+        return json_res
 
     
-    def _extract_response(self, res:str):
-        pattern = r"json\s*\n(\{.*?\})\s*"
-        matches = re.findall(pattern, res, re.DOTALL)
-        match = matches[-1]
-        return match.strip()
-
-    
-    def _json_handler(self , res:str):
-        """
-            json handler handlers handle json response and then pass it to correct tool
-            Args:
-                res: the response should be a json string. If it is pure response it should pass to _extract_response first before 
-                passing to _json_handle
-        """
-        obj = json.loads(res)
-        print(obj)
-        print(obj['tool'])
-        print(obj['args'])
 
 
     
