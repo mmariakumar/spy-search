@@ -13,7 +13,7 @@ def retrival_agent_prompt(tool_list, task):
                 - Function: Searches the database and returns up to `k` relevant results.  
             - **reset**:  
                 - Arguments: None  
-                - Function: Resets the entire database.
+                - Function: Rsesets the entire database.
 
             ---
 
