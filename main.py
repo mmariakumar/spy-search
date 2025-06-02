@@ -7,7 +7,7 @@ if __name__ == "__main__":
     from src.model.ollama import Ollama
     m = Ollama("deepseek-r1:1.5b") 
     l = LocalRAG(m)
-    l.add_document("./t.pdf")
+#    l.add_document("./t.pdf")
     r = l.search_document("what is agent ?" , 3)
     print(r)
 
