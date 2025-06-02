@@ -38,4 +38,4 @@ Join us in building the future of fast, affordable search!
 - [] UI with react
 
 ## Thank you everyone's support :) 
-[![Star History Chart](https://api.star-history.com/svg?repos=bytebase/star-history&type=Date)](https://star-history.com/#bytebase/star-history&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=JasonHonKL/spy-search&type=Date)](https://star-history.com/#JasonHonKL/spy-search&Date)
