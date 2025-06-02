@@ -18,7 +18,7 @@ class RAG_agent(Agent):
     def __init__(self, model, path: str = "./db"):
         self.model = model
         self.db = VectorSearch(path=path)
-        self.tool_list = ["Add_document", "Query", "Reset"]
+        self.tool_list = ["add_document", "query", "reset"]
 
     def run(self, task: str) -> str:
         self.task = task
