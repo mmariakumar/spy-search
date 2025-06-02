@@ -22,3 +22,11 @@ class Model(ABC):
     @abstractmethod
     def completion(self, query: str) -> str:
         pass
+
+    @abstractmethod
+    def get_client(self):
+        pass
+
+    @abstractmethod
+    def get_model(self):
+        pass
