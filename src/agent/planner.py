@@ -14,9 +14,9 @@ class Planner(Agent):
         self._output_model = {}
         self._todo_list = _todo()
 
-        self.message = [] 
+        self.message = []
 
-    def run(self , task):
+    def run(self, task):
         """
         It should generate a to do list
         and then pass to different agent

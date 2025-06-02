@@ -1,5 +1,6 @@
 from google import genai
 from google.genai import types
+from openai import OpenAI
 
 import os
 from dotenv import load_dotenv
@@ -29,3 +30,13 @@ class Gemini(Model):
         self.message.send_message(
             config=types.GenerateContentConfig(system_instruction=instruction)
         )
+
+    def get_client(self):
+        client = OpenAI(
+            api_key=self.api_key,
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
+        return client
+    
+    def get_model(self):
+        return self.model

@@ -1,4 +1,6 @@
 from .model import Model
+from openai import OpenAI
+
 from ollama import chat
 
 
@@ -20,5 +22,15 @@ class Ollama(Model):
                 print(chunk["message"]["content"], end="", flush=True)
         return res["message"]["content"] if stream == False else msg_cache
 
+    def get_client(self):
+        client = OpenAI(
+            base_url="http://localhost:11434/v1",
+            api_key="ollama",  # required, but unused
+        )
+        return client
+
+    def get_model(self):
+        return self.model
+    
     def _append_message(self, role: str, message: str):
         self.message.append({"role": role, "content": message})

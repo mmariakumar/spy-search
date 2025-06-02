@@ -1,6 +1,9 @@
-class Vision:
-    def __init__(self):
-        pass
+from .agent import Agent
 
-    def run(self , task):
+
+class Vision(Agent):
+    def __init__(self, model):
+        self.model = model
+
+    def run(self, task):
         pass
