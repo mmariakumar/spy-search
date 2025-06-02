@@ -25,7 +25,7 @@ Join us in building the future of fast, affordable search!
 - [x] RAG with the web search result
 
 ## v0.2 
-- [] RAG with local document
+- [x] RAG with local document
 - [] Complex work flow
 - [x] Add terminal executor
 
