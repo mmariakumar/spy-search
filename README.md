@@ -37,3 +37,5 @@ Join us in building the future of fast, affordable search!
 ## v0.4
 - [] UI with react
 
+## Thank you everyone's support :) 
+[![Star History Chart](https://api.star-history.com/svg?repos=bytebase/star-history&type=Date)](https://star-history.com/#bytebase/star-history&Date)
