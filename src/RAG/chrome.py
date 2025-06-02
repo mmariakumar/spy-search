@@ -12,17 +12,19 @@ class VectorSearch:
         name="new_collection",
         path: str = "./db",
     ):
-        # TODO: add load db 
+
         self.client = chromadb.PersistentClient(
             path=path, settings=Settings(allow_reset=True)
         )
-        self.reset()
         self.embedding = OllamaEmbeddingFunction(
             url="http://localhost:11434", model_name=model
         )
-        self.collection = self.client.create_collection(
-            name=name, embedding_function=self.embedding
-        )
+        try:    
+            self.collection = self.client.create_collection(
+                name=name, embedding_function=self.embedding
+            )
+        except:
+            self.collection = self.client.get_collection(name=name)
 
     def add_document(self, documents: str, id: str , metadatas:None = None):
         if metadatas == None:
