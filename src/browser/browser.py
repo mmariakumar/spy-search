@@ -16,8 +16,7 @@ import random
     - Scrool Down 
     - Access specific link
     - Print Screen
-    - Access to next page
-    - print screen
+    - Access to next page 
     - get text from the current web page []
     - switch tab [done , refactor need]
     - open multiple tab [done] 
@@ -30,6 +29,7 @@ class Browser:
     ARXIV_URL = "https://arxiv.org/"
     GOOGLE_NEWS_URL = "https://news.google.com/"
     GOOGLE_SCHOLAR = "https://scholar.google.com"
+    # maybe user can also self define some website
 
     def __init__(self):
         options = webdriver.ChromeOptions()
@@ -48,8 +48,7 @@ class Browser:
         time.sleep(1.5)  # avoid bot detection
         search_bar.send_keys(Keys.RETURN)
         time.sleep(3)
-
-        element = self.driver.find_element(By.TAG_NAME , "body")
+        res = self.get_search_content()
         # we have to use beautiful soup here
 
     def get_search_content(self):
@@ -195,6 +194,5 @@ class Browser:
 if __name__ == "__main__":
     b = Browser()
     b.GoogleSearch("tesla")
-    b.get_content()
     time.sleep(1)
     b.CloseDriver()
