@@ -5,13 +5,13 @@ def retrival_agent_prompt(tool_list, task):
             {tool_list}
 
             **Tools description:**  
-            - **Add_document**:  
+            - **add_document**:  
                 - Arguments: `documents: str`, `id: str`  
                 - Function: Adds a document to the collection, enabling future retrieval.  
-            - **Query**:  
+            - **query**:  
                 - Arguments: `query: str`, `k: int` (number of results to return)  
                 - Function: Searches the database and returns up to `k` relevant results.  
-            - **Reset**:  
+            - **reset**:  
                 - Arguments: None  
                 - Function: Resets the entire database.
 
