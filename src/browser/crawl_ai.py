@@ -42,8 +42,9 @@ class Crawl:
     async def close_crawler(self):
         await self.crawler.close()
 
-
-    async def get_url_llm(self , url):
+    # problem: still so slow --> for example searching takes 124.12s for arxiv website
+    # TODO: concurrent process other state first ?
+    async def get_url_llm(self , url , query):
         """
             Get url from a website with the help of llm
         """
@@ -53,14 +54,15 @@ class Crawl:
         self.run_conf = CrawlerRunConfig(
             cache_mode = CacheMode.BYPASS,
             word_count_threshold=1,
-            page_timeout=8000,
+            page_timeout=600,
 
             extraction_strategy=LLMExtractionStrategy(
                     llm_config=self.model.get_llm_config(),             
                     schema=_Url_result.model_json_schema(),
                     extraction_type="schema",
-                    instruction="""
+                    instruction=f"""
                     You are given the content of a search results webpage. Your task is to extract the main URL, the title of the webpage, and a brief description of the webpage. 
+                    You should give ALL linked that are relevant to the content {query} 
 
                     - The URL should be the full link to the webpage.
                     - The title should be the main heading or the title of the webpage.
@@ -68,11 +70,11 @@ class Crawl:
 
                     Return the result strictly in the JSON schema format as defined:
 
-                    {
+                    {{
                     "url": "string",
                     "description": "string",
                     "title": "string"
-                    }
+                    }}
 
                     Only provide the JSON object without additional text or explanation.
                     """
@@ -88,8 +90,9 @@ class Crawl:
             config=self.run_conf
         )
         await self.close_crawler()
+        # handle response instead of return result
+        print(type(result))
         return result.extracted_content
-
 
 
     def screen_shot(self):
