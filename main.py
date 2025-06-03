@@ -23,8 +23,9 @@ async def main():
     m = Deepseek("deepseek-chat")
     c = Crawl(m)
     
-    result = await c.get_summary("" , "Advancing AI assisted Hardware design")
-    print(result)
+ #   result = await c.get_summary("" , "Advancing AI assisted Hardware design")
+    t = await c.screen_shot("https://google.com")
+  #  print(result)
 
 
 

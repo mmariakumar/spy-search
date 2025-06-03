@@ -171,6 +171,9 @@ class Crawl:
         return page_summary
 
     async def get_table(self, url , query:str):
+        """
+            The performance of the get table is not good.  we may need to use VLLM to handle the table extraction job 
+        """
         self.browser_conf = BrowserConfig(headless=True)
         self.run_conf = CrawlerRunConfig(
             cache_mode=CacheMode.BYPASS,
@@ -217,8 +220,29 @@ class Crawl:
         return result
 
 
-    async def screen_shot(self):
-        pass 
+    async def screen_shot(self , url):
+        self.broswer_conf = BrowserConfig(headless=False , verbose=True)
+        self.run_conf = CrawlerRunConfig(
+            cache_mode=CacheMode.BYPASS,
+            screenshot=True,
+            scan_full_page=True,
+            wait_for_images=True
+        )
+
+        self.crawler = AsyncWebCrawler(config=self.broswer_conf) 
+        await self.start_crawler()
+
+        result = await self.crawler.arun(
+            url=url,
+            config=self.run_conf
+        )
+
+        if result.screenshot:
+            from base64 import b64decode
+            with open("./tmp/screenshot/screenshot.png", "wb") as f:
+                f.write(b64decode(result.screenshot))
+
+        await self.close_crawler()
     
 
     async def _is_pdf(self, url):
