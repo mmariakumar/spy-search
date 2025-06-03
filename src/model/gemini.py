@@ -2,6 +2,8 @@ from google import genai
 from google.genai import types
 from openai import OpenAI
 
+from crawl4ai import LLMConfig
+
 import os
 from dotenv import load_dotenv
 
@@ -37,6 +39,12 @@ class Gemini(Model):
             base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         )
         return client
+    
+    def get_llm_config(self)->LLMConfig:
+        return LLMConfig(
+            provider="gemini/"+self.model,
+            api_token=self.api_key
+        )
     
     def get_model(self):
         return self.model
