@@ -3,6 +3,8 @@ from crawl4ai import AsyncWebCrawler , BrowserConfig , CrawlerRunConfig , CacheM
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
 from pydantic import BaseModel, Field
 
+from ..model import Model
+
 class Crawl:
     """
     Crawl4ai should be used to support browser.py [Maybe we don't even need browser.py]
@@ -17,7 +19,7 @@ class Crawl:
         get_images: get all images from the webpage
         get_content: get relevant content to a markdown
     """
-    def __init__(self, model , db=None , url_search = None):
+    def __init__(self, model:Model , db=None , url_search = None):
         self.model = model
         self.crawler = AsyncWebCrawler()
         self.db = [] if db == None else db
@@ -41,10 +43,9 @@ class Crawl:
         await self.crawler.close()
 
 
-    async def get_url_llm(self):
+    async def get_url_llm(self , url):
         """
             Get url from a website with the help of llm
-            TODO: not fixed to be ollama  
         """
         self.broswer_conf = BrowserConfig(
             headless=True
@@ -55,10 +56,7 @@ class Crawl:
             page_timeout=8000,
 
             extraction_strategy=LLMExtractionStrategy(
-                    llm_config=LLMConfig(
-                        provider="deepseek/deepseek-chat", # for testing purpose only\
-                        # TODO: model --> provide get LLM config
-                    ),             
+                    llm_config=self.model.get_llm_config(),             
                     schema=_Url_result.model_json_schema(),
                     extraction_type="schema",
                     instruction="""
@@ -78,9 +76,7 @@ class Crawl:
 
                     Only provide the JSON object without additional text or explanation.
                     """
-                
             )
-
         )
         self.crawler = AsyncWebCrawler(
             config=self.broswer_conf
@@ -88,12 +84,11 @@ class Crawl:
         await self.start_crawler()
 
         result = await self.crawler.arun(
-            url="https://www.google.com/search?q=tesla&rlz=1C5CHFA_enHK975HK975&oq=tesla+&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDE4NTlqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8",
+            url=url,
             config=self.run_conf
         )
-        print(result.extracted_content)
-
         await self.close_crawler()
+        return result.extracted_content
 
 
 
@@ -112,7 +107,4 @@ class _Url_result(BaseModel):
     description: str = Field(... ,description="description of the website")
     title: str = Field(... , description="title of the webpage")
 
-if __name__ == "__main__":
-    c = Crawl("" , "" , "")
-    import asyncio
-    asyncio.run(c.get_url_llm())
+
