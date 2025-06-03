@@ -21,7 +21,7 @@ async def main():
     """
     m = Deepseek("deepseek-chat")
     c = Crawl(m)
-    result = await c.get_url_llm("https://arxiv.org/list/cs.CL/recent", "computer science papper")
+    result = await c.get_table("https://racing.hkjc.com/racing/information/Chinese/racing/RaceCard.aspx" , "horse information")
     print(result)
 
 
