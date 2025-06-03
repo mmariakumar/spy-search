@@ -1,6 +1,7 @@
 from src import Planner
 from src.model.deepseek import Deepseek
 from src.browser.crawl_ai import Crawl
+from src.RAG.summary import Summary
 
 # TODO: read json ? 
 
@@ -21,8 +22,10 @@ async def main():
     """
     m = Deepseek("deepseek-chat")
     c = Crawl(m)
-    result = await c.get_table("https://racing.hkjc.com/racing/information/Chinese/racing/RaceCard.aspx" , "horse information")
+    
+    result = await c.get_summary("" , "Advancing AI assisted Hardware design")
     print(result)
+
 
 
 if __name__ == "__main__":

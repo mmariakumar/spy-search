@@ -2,11 +2,14 @@
 from crawl4ai import AsyncWebCrawler , BrowserConfig , CrawlerRunConfig , CacheMode , LLMConfig
 from crawl4ai.extraction_strategy import LLMExtractionStrategy
 from pydantic import BaseModel, Field
+from markitdown import MarkItDown
 
 import json
 import requests
+import os 
 
 from ..model import Model
+from ..RAG.summary import Summary
 
 class Crawl:
     """
@@ -98,11 +101,25 @@ class Crawl:
         return self.url_list
 
     async def get_pdf_summary(self, url):
-        pass
+        """
+            download the pdf file
+            user markitdown to convert to markdown
+            generate summary with LLM --> we need a specific method to handle this 
+        """
+        p = self._download_pdf(url)
+        md = MarkItDown()
+        result = md.convert(p)
+        s = Summary(self.model)
+        r = s.summary(result.markdown)
+        del s
+        return r
+        
+
 
     async def get_summary(self , url , query):
-        if self._is_pdf(url):
-            return self.get_pdf_summary(url)
+        is_pdf = await self._is_pdf(url)
+        if is_pdf:
+            return await self.get_pdf_summary(url)
 
         self.broswer_conf = BrowserConfig()
         self.run_conf = CrawlerRunConfig(
@@ -204,18 +221,19 @@ class Crawl:
         pass 
     
 
-    def _is_pdf(self , url):
+    async def _is_pdf(self, url):
         try:
-            # Make a HEAD request first to get headers only
-            response = requests.head(url, allow_redirects=True)
-            
+            # Use GET request with stream=True to avoid downloading the entire file
+            response = requests.get(url, stream=True, allow_redirects=True, timeout=10)
+            response.raise_for_status()
+
             content_type = response.headers.get('Content-Type', '').lower()
+            # Check if content-type indicates PDF
             if 'application/pdf' in content_type:
                 return True
             
-            # If HEAD doesn't give content or is ambiguous, GET a few bytes to check signature
-            response = requests.get(url, stream=True)
-            # Read the first 5 bytes to check for '%PDF-'
+            # Sometimes content-type is not set correctly,
+            # so check the first 5 bytes for '%PDF-'
             start = response.raw.read(5)
             return start == b'%PDF-'
         
@@ -230,6 +248,21 @@ class Crawl:
     def run(self):
         pass 
 
+    def _download_pdf(self , url , save_path ="./tmp"):
+        filename = url.rstrip('/').split('/')[-1]
+        filename = filename.split('?')[0]
+        # Ensure the filename ends with .pdf
+        if not filename.lower().endswith('.pdf'):
+            filename += '.pdf'
+        save_path = os.path.join(save_path, filename)
+        
+        response = requests.get(url)
+        response.raise_for_status()
+        
+        with open(save_path, 'wb') as f:
+            f.write(response.content)
+        return save_path
+    
 
 class Url_result(BaseModel):
     url: str = Field(... , description="the link")
