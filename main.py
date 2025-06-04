@@ -1,32 +1,41 @@
 from src import Planner
+from src.agent.search import Search_agent
+from src.agent.retrival import RAG_agent
 from src.model.deepseek import Deepseek
 from src.browser.crawl_ai import Crawl
+
+from src.router import Server , Router
+
 from src.RAG.summary import Summary
 
 # TODO: read json ? 
 
-async def main():
-    """
-        workflow: 
-            planner:
-                state 1: no more planning / no more planning step / staisfy response ; action: return response
-                state 2: more information about this subject is requried before writing report ; action: browser agent
-                state 3: local information is needed (requrie by the use for example) ; action: send to local RAG query
-                state 4: retrival information from previous round ; action: RAG query
-                state 5: enough information to write the report / response ; action writer
-            
-            browser:
-                state 1: no more searching step ; action summarize current db --> send back to planner
-                state 2: no next url in the searching space; action: based on available searching api --> search relevant information
-                state 3: have next url --> search relevent content and script the list of available website (selected by LLM)
-    """
-    m = Deepseek("deepseek-chat")
-    c = Crawl(m)
-    
- #   result = await c.get_summary("" , "Advancing AI assisted Hardware design")
-    t = await c.screen_shot("https://google.com")
-  #  print(result)
+STEP = 10
 
+async def main():
+    query = "Today's AI news "
+    planner =Planner(model=Deepseek("deepseek-chat") , query=query)
+
+    searcher = Search_agent(model=Deepseek("deepseek-chat"))
+    rag = RAG_agent(model=Deepseek("deepseek-chat"))
+
+
+    planner.add_model(model="searcher",description="Search information from the internet")
+    #planner.add_model(model="rag",description="Vector search relevant local content")
+    #planner.add_model(model="reporter" , description="Summarize and write report based on given content")
+
+    server = Server()
+    planner_router = Router(server , planner)
+
+    server.add_router("planner", planner_router)
+    server.add_router("searcher" , searcher)
+    server.set_initial_router("planner" , query)
+
+    """
+        all other agent set up  
+    """
+
+    server.start(query=query)
 
 
 if __name__ == "__main__":

@@ -6,6 +6,14 @@ class Search_agent(Agent):
     def __init__(self, model: model):
         self.model = model
 
-    def run(self, task) -> str:
+    def run(self, task , data) -> str:
 
-        return ""
+        return {
+            "agent":"TERMINATE"
+        }
+
+    def get_send_format(self):
+        pass 
+
+    def get_recv_format(self):
+        pass
