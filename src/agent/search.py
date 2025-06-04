@@ -7,7 +7,11 @@ class Search_agent(Agent):
         self.model = model
 
     def run(self, task , data) -> str:
-
+        """
+            Search function need to user the brower methods to search relevant contents 
+            - note that search agent should have it's own planner to plan search with what links
+            - 
+        """
         return {
             "agent":"TERMINATE"
         }
