@@ -41,6 +41,11 @@ class Planner(Agent):
             res = agent.run(task)
 
     def add_model(self, model, description):
+        """
+            Args:
+                model: agent
+                description: descripe the agent
+        """
         self._output_model[model] = description
 
     def _response_handler(self, json_response):
@@ -61,6 +66,7 @@ class Planner(Agent):
 """
 
 
+
 class _todo:
     def __init__(self):
         self.todo_list = deque()
@@ -79,3 +85,4 @@ class _task:
     def __init__(self, task: str, agent: Agent):
         self.task = task
         self.agent = agent
+

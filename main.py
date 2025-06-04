@@ -5,6 +5,8 @@ from src.RAG.summary import Summary
 
 # TODO: read json ? 
 
+STEP = 10
+
 async def main():
     """
         workflow: 
@@ -15,18 +17,17 @@ async def main():
                 state 4: retrival information from previous round ; action: RAG query
                 state 5: enough information to write the report / response ; action writer
             
-            browser:
+            search:
                 state 1: no more searching step ; action summarize current db --> send back to planner
                 state 2: no next url in the searching space; action: based on available searching api --> search relevant information
                 state 3: have next url --> search relevent content and script the list of available website (selected by LLM)
+            
+            retrival:
+                state 1: no more searching step action terminate
+                state 2: not enough content --> action: summary with local top k selected document [TODO: maybe save in sqlite3 ?] 
+                state 3: enough content --> action return summary
     """
-    m = Deepseek("deepseek-chat")
-    c = Crawl(m)
-    
- #   result = await c.get_summary("" , "Advancing AI assisted Hardware design")
-    t = await c.screen_shot("https://google.com")
-  #  print(result)
-
+    p =Planner(model=Deepseek("deepseek-chat"))
 
 
 if __name__ == "__main__":
