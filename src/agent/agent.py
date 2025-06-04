@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 import re
 import json
 
+from pydantic import BaseModel
+
 """
     This is an abstract class for Agent
     Here we will list out method that an Agent should have 
@@ -20,8 +22,16 @@ class Agent(ABC):
     """
 
     @abstractmethod
-    def run(self):
+    def run(self, response):
         pass
+
+    @abstractmethod
+    def get_recv_format(self)->BaseModel:
+        pass 
+
+    @abstractmethod
+    def get_send_format(self)->BaseModel:
+        pass 
 
     def _extract_response(self, res: str):
         """
