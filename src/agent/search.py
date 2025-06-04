@@ -9,3 +9,9 @@ class Search_agent(Agent):
     def run(self, task) -> str:
 
         return ""
+
+    def get_send_format(self):
+        pass 
+
+    def get_recv_format(self):
+        pass

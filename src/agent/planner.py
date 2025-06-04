@@ -15,30 +15,35 @@ class Planner(Agent):
         self._todo_list = _todo()
 
         self.message = []
+        self.initialize = False
 
-    def run(self, task):
+
+    def get_recv_format(self):
+        pass 
+
+    def get_send_format(self):
+        pass
+
+    def run(self, response):
         """
         It should generate a to do list
         and then pass to different agent
         """
 
         # Initialization
-        prompt = planner_agent_prompt(
-            list(self._output_model.keys()),
-            list(self._output_model.values()),
-            self.query,
-        )
-        res = self._model.completion(prompt)
-        json_response = self._extract_response(res)
-        self._response_handler(json_response)
+        # only run for oen time
+        if not self.initialize:
+            prompt = planner_agent_prompt(
+                list(self._output_model.keys()),
+                list(self._output_model.values()),
+                self.query,
+            )
+            res = self._model.completion(prompt)
+            print(res)
 
-        # Main loop
-        while self._todo_list.len() != 0:
-            cur_task = self._todo_list.pop_task()
-            agent = cur_task.agent
-            task = cur_task.task
-            # check if any information update from other agent
-            res = agent.run(task)
+            self.initialize = True
+
+
 
     def add_model(self, model, description):
         """

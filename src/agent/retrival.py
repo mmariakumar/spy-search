@@ -39,3 +39,8 @@ class RAG_agent(Agent):
         print(obj)
         print(obj["tool"])
         print(obj["args"])
+
+    def get_recv_format(self):
+        pass
+    def get_send_format(self):
+        pass
