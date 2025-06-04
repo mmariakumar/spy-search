@@ -26,7 +26,7 @@ Join us in building the future of fast, affordable search!
 
 ## v0.2 
 - [x] RAG with local document
-- [] Search with Craw4Ai
+- [x] Search with Craw4Ai
 - [] Complex work flow
 - [x] Add terminal executor
 
