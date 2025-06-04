@@ -8,7 +8,9 @@ from collections import deque
 
 
 class Planner(Agent):
-    def __init__(self, model: model, query: str):
+    def __init__(
+        self, model: model, query: str , data=None
+    ):
         self.query = query
         self._model = model
         self._output_model = {}
@@ -16,6 +18,9 @@ class Planner(Agent):
 
         self.message = []
         self.initialize = False
+
+        self.response = "" 
+        self.db = [] 
 
 
     def get_recv_format(self):
@@ -46,24 +51,29 @@ class Planner(Agent):
             
             obj = {
                 "agent": task.agent,
-                "task": task.task
+                "task": task.task, 
+                "data": "" 
             }
             return obj
         else:
+            self._response_handler(response)
             new_task = self._todo_list.pop_task()
             if new_task == None:
                 obj = {
                     "agent": "TERMINATE",
-                    "task": "TERMINATE"
+                    "task": "TERMINATE",
+                    "data": self.response
                 }
             else:
                 obj = {
                     "agent": task.agent,
-                    "task": task.task
+                    "task": task.task,
+                    "data": ""
                 }
             return obj
 
-
+    def _response_handler(self, response):
+        print(response)
 
 
     def add_model(self, model, description):

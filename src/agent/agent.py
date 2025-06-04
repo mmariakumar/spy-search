@@ -22,7 +22,7 @@ class Agent(ABC):
     """
 
     @abstractmethod
-    def run(self, response):
+    def run(self, response , data=None):
         pass
 
     @abstractmethod

@@ -21,14 +21,14 @@ async def main():
 
 
     planner.add_model(model="searcher",description="Search information from the internet")
-    planner.add_model(model="rag",description="Vector search relevant local content")
-    planner.add_model(model="reporter" , description="Summarize and write report based on given content")
+    #planner.add_model(model="rag",description="Vector search relevant local content")
+    #planner.add_model(model="reporter" , description="Summarize and write report based on given content")
 
     server = Server()
     planner_router = Router(server , planner)
 
     server.add_router("planner", planner_router)
-    server.set_initial_router("planner" , query)
+    server.set_initial_router("searrcher" , query)
 
     """
         all other agent set up  

@@ -25,6 +25,7 @@ class Server:
         self.router_list:list = []
         self.initial_router:str = ""
         self.next_router = None
+        self.data = [] 
 
     def recv_message(self):
         pass 
@@ -36,7 +37,7 @@ class Server:
         self.next_router = self.routers[self.initial_router]
         
         while True:
-            query = self.next_router.recv_response(query)
+            query = self.next_router.recv_response(query , self.data)
 
             print(query)
             # analysis the query            
@@ -44,12 +45,10 @@ class Server:
             if self.check_response(query):
                 break
 
-            self.next_router , query = self.query_handler(query)
-                
-            
+            self.next_router , query , self.data = self.query_handler(query)
              
 
-    def query_handler(self , query:str):
+    def query_handler(self , query:dict):
         """
             This should parese the query and get 
             1. which agent it want to send to i.e next router
@@ -61,9 +60,9 @@ class Server:
 
             }
         """
-        print("query handling")
+        return self.routers[query.agent] , query.task , query.data
 
-    def check_response(self , msg):
+    def check_response(self , msg:dict):
         """
             Check if the message is terminate message 
             Please note that for our case only planner could have the right
@@ -71,6 +70,8 @@ class Server:
             Other agent typically should route back to the planner agent  
         """
         print("checking response")
+        if msg.agent == "TERMINATE":
+            return True
         return True 
     
     def set_initial_router(self , name:str , msg:str):
