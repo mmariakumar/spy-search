@@ -19,18 +19,18 @@ class VectorSearch:
         self.embedding = OllamaEmbeddingFunction(
             url="http://localhost:11434", model_name=model
         )
-        try:    
+        try:
             self.collection = self.client.create_collection(
                 name=name, embedding_function=self.embedding
             )
         except:
             self.collection = self.client.get_collection(name=name)
 
-    def add_document(self, documents: str, id: str , metadatas:None = None):
+    def add_document(self, documents: str, id: str, metadatas: None = None):
         if metadatas == None:
             self.collection.add(documents=documents, ids=id)
         else:
-            self.collection.add(documents=documents , ids=id ,metadatas= metadatas)
+            self.collection.add(documents=documents, ids=id, metadatas=metadatas)
 
     def query(self, query: str, k: int):
         return self.collection.query(query_texts=query, n_results=k)

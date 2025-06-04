@@ -42,5 +42,6 @@ class RAG_agent(Agent):
 
     def get_recv_format(self):
         pass
+
     def get_send_format(self):
         pass

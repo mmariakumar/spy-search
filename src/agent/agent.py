@@ -22,16 +22,16 @@ class Agent(ABC):
     """
 
     @abstractmethod
-    def run(self, response , data=None):
+    def run(self, response, data=None):
         pass
 
     @abstractmethod
-    def get_recv_format(self)->BaseModel:
-        pass 
+    def get_recv_format(self) -> BaseModel:
+        pass
 
     @abstractmethod
-    def get_send_format(self)->BaseModel:
-        pass 
+    def get_send_format(self) -> BaseModel:
+        pass
 
     def _extract_response(self, res: str):
         """
@@ -84,5 +84,3 @@ class Agent(ABC):
             except json.JSONDecodeError:
                 continue
         return None
-    
-
