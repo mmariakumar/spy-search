@@ -38,6 +38,7 @@ class Server:
         while True:
             query = self.next_router.recv_response(query)
 
+            print(query)
             # analysis the query            
 
             if self.check_response(query):

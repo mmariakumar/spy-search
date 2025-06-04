@@ -29,7 +29,6 @@ class Planner(Agent):
         It should generate a to do list
         and then pass to different agent
         """
-
         # Initialization
         # only run for oen time
         if not self.initialize:
@@ -39,9 +38,31 @@ class Planner(Agent):
                 self.query,
             )
             res = self._model.completion(prompt)
-            print(res)
-
+            self._response_todo_handler(res)
             self.initialize = True
+
+            # send back to router ? 
+            task = self._todo_list.pop_task()
+            
+            obj = {
+                "agent": task.agent,
+                "task": task.task
+            }
+            return obj
+        else:
+            new_task = self._todo_list.pop_task()
+            if new_task == None:
+                obj = {
+                    "agent": "TERMINATE",
+                    "task": "TERMINATE"
+                }
+            else:
+                obj = {
+                    "agent": task.agent,
+                    "task": task.task
+                }
+            return obj
+
 
 
 
@@ -53,12 +74,13 @@ class Planner(Agent):
         """
         self._output_model[model] = description
 
-    def _response_handler(self, json_response):
+    def _response_todo_handler(self, json_response):
         """
         For planner json response should be handling an array []
         add everything into the todo list queue
         """
-        obj = json.loads(json_response)
+        texts = self._extract_response(json_response)
+        obj = json.loads(texts)
         for response in obj:
             task = response["task"]
             agent = self._output_model[response["agent"]]
@@ -80,6 +102,8 @@ class _todo:
         self.todo_list.append(_task(task, Agent))
 
     def pop_task(self):
+        if self.len() == 0:
+            return None
         return self.todo_list.popleft()
 
     def len(self):

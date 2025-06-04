@@ -21,11 +21,16 @@ class Router(object):
         self.server = server 
         self.agent = agent
         
-    def send_response(self):
-        self.server.recv_message(self.agent.run())
+    def send_response(self , response):
+        return response
 
-    def recv_response(self , response):
-        self.agent.run(response)
+    def recv_response(self , message):
+        """
+            An agent receive the message from other agent
+            use the run function and send it back to server 
+        """
+        res = self.agent.run(message)
+        return self.send_response(res)
 
     def set_send_format(self , s:BaseModel):
         self.send_format = s
