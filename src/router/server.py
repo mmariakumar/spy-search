@@ -70,7 +70,8 @@ class Server:
             Other agent typically should route back to the planner agent  
         """
         print("checking response")
-        if msg.agent == "TERMINATE":
+        print(msg)
+        if msg['agent'] == "TERMINATE":
             return True
         return True 
     

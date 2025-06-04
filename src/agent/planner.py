@@ -29,7 +29,7 @@ class Planner(Agent):
     def get_send_format(self):
         pass
 
-    def run(self, response):
+    def run(self, response , data=None):
         """
         It should generate a to do list
         and then pass to different agent

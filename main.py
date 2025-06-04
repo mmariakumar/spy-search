@@ -28,7 +28,8 @@ async def main():
     planner_router = Router(server , planner)
 
     server.add_router("planner", planner_router)
-    server.set_initial_router("searrcher" , query)
+    server.add_router("searcher" , searcher)
+    server.set_initial_router("planner" , query)
 
     """
         all other agent set up  

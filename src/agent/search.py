@@ -8,7 +8,9 @@ class Search_agent(Agent):
 
     def run(self, task , data) -> str:
 
-        return ""
+        return {
+            "agent":"TERMINATE"
+        }
 
     def get_send_format(self):
         pass 
