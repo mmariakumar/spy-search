@@ -113,13 +113,13 @@ class Crawl:
         del s
         return r
 
-    async def get_summary(self, url:list, query):
-        summary = [] 
+    async def get_summary(self, url: list, query):
+        summary = []
         for u in url:
-           is_pdf = await self._is_pdf(u) 
-           if is_pdf:
-               await summary.append(self.get_pdf_summary(u))
-               url.remove(u)
+            is_pdf = await self._is_pdf(u)
+            if is_pdf:
+                await summary.append(self.get_pdf_summary(u))
+                url.remove(u)
 
         self.broswer_conf = BrowserConfig()
         self.run_conf = CrawlerRunConfig(
@@ -132,17 +132,19 @@ class Crawl:
                 You are given the content of a webpage. Extract the following information relevant to the query: {query}
 
                 - Title: The main title of the page.
-                - Summary: A detailed summary describing the main content of the page. (less than 200 words)
+                - Summary: A detailed summary describing the main content of the page. (around 300 - 400 words)
                 - Brief_summary: A concise, one or two sentence summary of the page. (2 to 3 sentences)
                 - Keywords: A list of relevant keywords or key phrases that represent the main topics of the page.
+                - url: the page url
 
                 Return the information as a JSON object matching this schema:
 
                 {{
-                "title": "string",
-                "summary": "string",
-                "brief_summary": "string",
-                "keywords": ["string", "string", ...]
+                    "title": "string",
+                    "summary": "string",
+                    "brief_summary": "string",
+                    "keywords": ["string", "string", ...]
+                    "url": "string
                 }}
                 
                 If the content is not relevant to the query, return:
@@ -153,6 +155,7 @@ class Crawl:
                 "summary": "error",
                 "brief_summary": "error",
                 "keywords": null
+                "url": ""
                 }}
             
 
@@ -169,11 +172,11 @@ class Crawl:
             config=self.run_conf,
         )
         await self.close_crawler()
-        
+
         for ele in result:
             page_summary = json.loads(ele.extracted_content)
             summary.append(page_summary[0])
-    
+
         return summary
 
     async def get_table(self, url, query: str):

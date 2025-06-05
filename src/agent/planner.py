@@ -52,13 +52,13 @@ class Planner(Agent):
             self._response_handler(response)
             new_task = self._todo_list.pop_task()
             if new_task == None:
-                obj = {"agent": "TERMINATE", "task": "TERMINATE", "data": self.response}
+                obj = {"agent": "TERMINATE", "task": "TERMINATE", "data": data}
             else:
-                obj = {"agent": task.agent, "task": task.task, "data": ""}
+                obj = {"agent": new_task.agent, "task": new_task.task, "data": data}
             return obj
 
     def _response_handler(self, response):
-        print(response)
+        pass 
 
     def add_model(self, model, description):
         """

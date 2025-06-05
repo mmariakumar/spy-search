@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 def planner_agent_prompt(
     agent_list: list[str], agent_description: list[str], task: str
 ) -> str:
@@ -41,3 +43,4 @@ def planner_agent_prompt(
     
     """
     return prompt
+

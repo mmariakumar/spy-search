@@ -62,8 +62,7 @@ class Search_agent(Agent):
         while cur_task < len(self.todo):
             task = self.todo[cur_task]
             tool , keyword , search_engine = task['tool'] , task['keyword'] , task['search_engine']
-            #print(f"tool: {tool}")
-            #print(f"keyword:{keyword}")
+
             match tool: 
                 case "url_search":
                     urls = await self._search_url(keyword , cur_db , search_engine)
@@ -76,9 +75,8 @@ class Search_agent(Agent):
                 case _:
                     print("TOOL NOT FOUND")
             cur_task +=1 
-            
 
-        return {"agent": "TERMINATE" , "db":self.db}
+        return {"agent": "planner" , "data":self.db , "task":""}
 
     def get_send_format(self):
         pass
@@ -125,13 +123,44 @@ class Search_agent(Agent):
         summary_list = await self.crawl.get_summary(urls , query)
 
         for summary in summary_list:
+            try:
+                (summary['url'])
+            except:
+                summary['url'] = ""
+            
+            try:
+                summary['title']
+            except:
+                summary['title']= ""
+
+            try:
+                summary['summary']
+            except:
+                summary['summary'] = ""
+
+            try:
+                summary['brief_summary']
+            except:
+                summary['brief_summary'] = ""
+
+            try:
+                summary["url"]
+            except:
+                summary["url"]=""
+
+            try:
+                summary["keywords"]
+            except:
+                summary["keywords"] = [] 
+
             self.db.append(
                 {
+                    "title": summary['title'],
                     "brief_summary" : summary['brief_summary'],
-                    "summary":summary['brief_summary'],
+                    "summary":summary['summary'],
                     "keywords":summary["keywords"],
+                    "url": summary["url"],
                 }
             )
-
         return summary_list
         

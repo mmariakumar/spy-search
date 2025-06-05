@@ -40,11 +40,11 @@ class Server:
 
         while True:
             query = await self.next_router.recv_response(query, self.data)
-            print(query)
             if self.check_response(query):
-                break
+                return query
 
             self.next_router, query, self.data = self.query_handler(query)
+            print(self.data)
 
     def query_handler(self, query: dict):
         """
@@ -67,7 +67,6 @@ class Server:
         to terminate the process.
         Other agent typically should route back to the planner agent
         """
-        print("checking response")
         if msg["agent"] == "TERMINATE":
             return True
         return False
