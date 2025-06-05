@@ -32,14 +32,14 @@ class Server:
     def recv_message(self):
         pass
 
-    def start(self, query: str):
+    async def start(self, query: str):
         """
         start the workflow
         """
         self.next_router = self.routers[self.initial_router]
 
         while True:
-            query = self.next_router.recv_response(query, self.data)
+            query = await self.next_router.recv_response(query, self.data)
             print(query)
             if self.check_response(query):
                 break

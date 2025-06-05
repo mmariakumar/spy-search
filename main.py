@@ -14,7 +14,7 @@ STEP = 10
 
 
 async def main():
-    query = "LLM AI agent Research"
+    query = "today news about google"
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
     rag = RAG_agent(model=Deepseek("deepseek-chat"))
@@ -36,8 +36,8 @@ async def main():
     """
         all other agent set up  
     """
-
-    server.start(query=query)
+    print("Start")
+    await server.start(query=query)
 
 
 if __name__ == "__main__":

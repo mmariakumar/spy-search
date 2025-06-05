@@ -3,6 +3,8 @@ from ..model import Model
 
 from ..prompt.searcher import search_plan
 
+from ..browser.crawl_ai import Crawl
+
 from collections import deque
 import json
 
@@ -13,6 +15,7 @@ class Search_agent(Agent):
         k: number of steps
         """
         self.model = model
+        self.crawl = Crawl(model=model)
 
         self.search_web = [
             "https://google.com",
@@ -23,8 +26,10 @@ class Search_agent(Agent):
 
         self.todo = deque()
         self.step = 10
+        self.url_list = []
+        self.db = [] 
 
-    def run(self, task, data) -> str:
+    async def run(self, task, data) -> str:
         """
         Search function need to user the brower methods to search relevant contents
         - note that search agent should have it's own planner to plan search with what links
@@ -48,22 +53,32 @@ class Search_agent(Agent):
         tools = {} 
         url_list = []
         cur_task = 0
+
+        cur_db = [] 
+        for d in data:
+            cur_db.append(d["summary_list"])
+        query = task 
+        
         while cur_task < len(self.todo):
             task = self.todo[cur_task]
             tool , keyword , search_engine = task['tool'] , task['keyword'] , task['search_engine']
-            print(f"tool: {tool}")
-            print(f"keyword:{keyword}")
-            match tool:
+            #print(f"tool: {tool}")
+            #print(f"keyword:{keyword}")
+            match tool: 
                 case "url_search":
-                    self._search_url()
+                    urls = await self._search_url(keyword , cur_db , search_engine)
+                    for url in urls:
+                        self.url_list.append(url)
                 case "page_content":
-                    self._page_content()
+                    #print(self.url_list)
+                    await self._page_content(query)
+                    self.url_list = [] 
                 case _:
                     print("TOOL NOT FOUND")
             cur_task +=1 
             
 
-        return {"agent": "TERMINATE"}
+        return {"agent": "TERMINATE" , "db":self.db}
 
     def get_send_format(self):
         pass
@@ -82,13 +97,41 @@ class Search_agent(Agent):
         k -= len(tasks)
         for task in tasks:
             self.todo.append(task)
+        
+        #print(tasks)
         return k
 
     def _task_handler(self , task:str):
         pass
 
-    def _search_url(self):
+    async def _search_url(self , query, db , search_engine):
+        """
+            search url with google 
+        """
+        # test with google first
+        # result is an array 
         print("Search URL handling ... ")
 
-    def _page_content(self):
+        result = await self.crawl.get_url_llm("https://google.com/search?q="+query , query)
+        return result
+
+    async def _page_content(self, query):
         print("page content handling ... ")
+        if not self.url_list:
+            return None # no url
+        urls =[]
+        for element in self.url_list:
+            urls.append(element['url'])
+        summary_list = await self.crawl.get_summary(urls , query)
+
+        for summary in summary_list:
+            self.db.append(
+                {
+                    "brief_summary" : summary['brief_summary'],
+                    "summary":summary['brief_summary'],
+                    "keywords":summary["keywords"],
+                }
+            )
+
+        return summary_list
+        

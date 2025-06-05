@@ -76,6 +76,7 @@ class Crawl:
                     - The URL should be the full link to the webpage.
                     - The title should be the main heading or the title of the webpage.
                     - The description should be a concise summary or snippet describing the webpage content.
+                    - Please return top 2 meaningful URL.
 
                     Return the result strictly in the JSON schema format as defined:
 
@@ -112,10 +113,13 @@ class Crawl:
         del s
         return r
 
-    async def get_summary(self, url, query):
-        is_pdf = await self._is_pdf(url)
-        if is_pdf:
-            return await self.get_pdf_summary(url)
+    async def get_summary(self, url:list, query):
+        summary = [] 
+        for u in url:
+           is_pdf = await self._is_pdf(u) 
+           if is_pdf:
+               await summary.append(self.get_pdf_summary(u))
+               url.remove(u)
 
         self.broswer_conf = BrowserConfig()
         self.run_conf = CrawlerRunConfig(
@@ -128,8 +132,8 @@ class Crawl:
                 You are given the content of a webpage. Extract the following information relevant to the query: {query}
 
                 - Title: The main title of the page.
-                - Summary: A detailed summary describing the main content of the page.
-                - Brief_summary: A concise, one or two sentence summary of the page.
+                - Summary: A detailed summary describing the main content of the page. (less than 200 words)
+                - Brief_summary: A concise, one or two sentence summary of the page. (2 to 3 sentences)
                 - Keywords: A list of relevant keywords or key phrases that represent the main topics of the page.
 
                 Return the information as a JSON object matching this schema:
@@ -140,15 +144,17 @@ class Crawl:
                 "brief_summary": "string",
                 "keywords": ["string", "string", ...]
                 }}
-
+                
                 If the content is not relevant to the query, return:
 
+                
                 {{
                 "title": "error",
                 "summary": "error",
                 "brief_summary": "error",
                 "keywords": null
                 }}
+            
 
                 Only provide the JSON object without any additional text or explanation.
                 """,
@@ -158,13 +164,17 @@ class Crawl:
         self.crawler = AsyncWebCrawler(config=self.broswer_conf)
         await self.start_crawler()
 
-        result = await self.crawler.arun(
-            url=url,
+        result = await self.crawler.arun_many(
+            urls=url,
             config=self.run_conf,
         )
         await self.close_crawler()
-        page_summary = json.loads(result.extracted_content)
-        return page_summary
+        
+        for ele in result:
+            page_summary = json.loads(ele.extracted_content)
+            summary.append(page_summary[0])
+    
+        return summary
 
     async def get_table(self, url, query: str):
         """

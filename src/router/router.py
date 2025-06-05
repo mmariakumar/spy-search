@@ -33,12 +33,12 @@ class Router(object):
     def send_response(self, response):
         return response
 
-    def recv_response(self, message, data=None):
+    async def recv_response(self, message, data=None):
         """
         An agent receive the message from other agent
         use the run function and send it back to server
         """
-        res = self.agent.run(message, data)
+        res = await self.agent.run(message, data)
         return self.send_response(res)
 
     def set_send_format(self, s: BaseModel):
