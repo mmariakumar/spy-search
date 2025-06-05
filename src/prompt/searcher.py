@@ -1,6 +1,13 @@
 import datetime
 
-def search_plan(task: str, todo: list[str], k: int = 1, search_engine:list[str]=["google", "arxiv", "google_news"], data:list[str]=[]) -> str:
+
+def search_plan(
+    task: str,
+    todo: list[str],
+    k: int = 4,
+    search_engine: list[str] = ["google", "arxiv", "google_news"],
+    data: list[str] = [],
+) -> str:
     step_left = k - len(todo)
     return f"""
         Today is {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}

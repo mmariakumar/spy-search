@@ -3,24 +3,28 @@ from src.agent.search import Search_agent
 from src.agent.retrival import RAG_agent
 from src.model.deepseek import Deepseek
 from src.browser.crawl_ai import Crawl
+from src.agent.reporter import Reporter
 
 from src.router import Server, Router
 
 from src.RAG.summary import Summary
 
-# TODO: read json ?
 
 STEP = 10
 
 
 async def main():
-    query = "today news about google"
+    query = "What is AI Agent ?"
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
     rag = RAG_agent(model=Deepseek("deepseek-chat"))
+    reporter = Reporter(model=Deepseek("deepseek-chat"))
 
     planner.add_model(
         model="searcher", description="Search latest information"
+    )
+    planner.add_model(
+        model="reporter", description="generateing report"
     )
     # planner.add_model(model="rag",description="Vector search relevant local content")
     # planner.add_model(model="reporter" , description="Summarize and write report based on given content")
@@ -28,16 +32,19 @@ async def main():
     server = Server()
     planner_router = Router(server, planner)
     searcher_router = Router(server , searcher)
+    report_router = Router(server, reporter)
 
     server.add_router("planner", planner_router)
     server.add_router("searcher", searcher_router)
+    server.add_router("reporter" , report_router)
     server.set_initial_router("planner", query)
 
     """
         all other agent set up  
     """
-    print("Start")
-    await server.start(query=query)
+    print("Start running GO GO GO ...\n ")
+    response = await server.start(query=query)
+    print(response["data"])
 
 
 if __name__ == "__main__":
