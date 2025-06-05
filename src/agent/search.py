@@ -123,36 +123,11 @@ class Search_agent(Agent):
         summary_list = await self.crawl.get_summary(urls , query)
 
         for summary in summary_list:
-            try:
-                (summary['url'])
-            except:
-                summary['url'] = ""
-            
-            try:
-                summary['title']
-            except:
-                summary['title']= ""
-
-            try:
-                summary['summary']
-            except:
-                summary['summary'] = ""
-
-            try:
-                summary['brief_summary']
-            except:
-                summary['brief_summary'] = ""
-
-            try:
-                summary["url"]
-            except:
-                summary["url"]=""
-
-            try:
-                summary["keywords"]
-            except:
-                summary["keywords"] = [] 
-
+            summary['url'] = summary.get('url', "")
+            summary['title'] = summary.get('title', "")
+            summary['summary'] = summary.get('summary', "")
+            summary['brief_summary'] = summary.get('brief_summary', "")
+            summary['keywords'] = summary.get('keywords', [])
             self.db.append(
                 {
                     "title": summary['title'],

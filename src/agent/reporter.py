@@ -6,11 +6,13 @@ from ..model import Model
 class Reporter(Agent):
     def __init__(self, model:Model):
         self.model = model
+        self.todo = []
 
 
     async def run(self , response , data=None):
         """
             based on query and data to write a response 
+            Maybe we plan what to write and write a report style ? 
         """
         prompt = report_prompt(response , data)
         r = self.model.completion(prompt)
@@ -21,4 +23,8 @@ class Reporter(Agent):
 
     def get_send_format(self):
         pass
+
+
+    def _planner(self):
+        pass 
 
