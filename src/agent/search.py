@@ -1,9 +1,10 @@
 from .agent import Agent
-from ..model import model
+from ..model import Model
 
+from ..prompt.searcher import search_plan
 
 class Search_agent(Agent):
-    def __init__(self, model: model, k: int = 10):
+    def __init__(self, model:Model, k: int = 10):
         """
         take some default URL for search
         k: number of steps
@@ -17,7 +18,7 @@ class Search_agent(Agent):
             "https://scholar.google.com",
         ]
 
-        self.planner = []
+        self.todo = []
         self.step = 10
 
     def run(self, task, data) -> str:
@@ -35,10 +36,12 @@ class Search_agent(Agent):
                 if relevant --> self to db
                 generate long short summary
             3. Return two things
-                for data we want to reutrn the long summary
+                data: we want to reutrn the long summary
                 for response we just need to response "FINISHED"
-
+                AGENT: PLANNER
         """
+        print("SEARCHER: RUNNING ")
+        self._plan(task)
         return {"agent": "TERMINATE"}
 
     def get_send_format(self):
@@ -47,8 +50,13 @@ class Search_agent(Agent):
     def get_recv_format(self):
         pass
 
-    def _plan(self):
+    def _plan(self , task:str):
         """
         Searcher planner
         """
+        prompt = search_plan(task , self.todo)
+        r = self.model.completion(prompt)
+        print(r)
+
+    def _task_handler(self , task:str):
         pass

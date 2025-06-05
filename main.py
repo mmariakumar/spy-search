@@ -27,9 +27,10 @@ async def main():
 
     server = Server()
     planner_router = Router(server, planner)
+    searcher_router = Router(server , searcher)
 
     server.add_router("planner", planner_router)
-    server.add_router("searcher", searcher)
+    server.add_router("searcher", searcher_router)
     server.set_initial_router("planner", query)
 
     """

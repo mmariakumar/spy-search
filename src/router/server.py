@@ -40,10 +40,7 @@ class Server:
 
         while True:
             query = self.next_router.recv_response(query, self.data)
-
             print(query)
-            # analysis the query
-
             if self.check_response(query):
                 break
 
@@ -61,7 +58,7 @@ class Server:
 
         }
         """
-        return self.routers[query.agent], query.task, query.data
+        return self.routers[query["agent"]], query["task"], query["data"]
 
     def check_response(self, msg: dict):
         """
@@ -73,7 +70,7 @@ class Server:
         print("checking response")
         if msg["agent"] == "TERMINATE":
             return True
-        return True
+        return False
 
     def set_initial_router(self, name: str, msg: str):
         self.initial_router = name

@@ -47,7 +47,6 @@ class Planner(Agent):
             task = self._todo_list.pop_task()
 
             obj = {"agent": task.agent, "task": task.task, "data": ""}
-            print(obj)
             return obj
         else:
             self._response_handler(response)
