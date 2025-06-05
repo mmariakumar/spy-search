@@ -14,7 +14,7 @@ STEP = 10
 
 
 async def main():
-    query = "What is AI Agent ?"
+    query = "What is AI Agent"
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
     rag = RAG_agent(model=Deepseek("deepseek-chat"))
