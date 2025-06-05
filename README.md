@@ -20,6 +20,12 @@ We suggest to use uv.
     uv pip install requirements.txt
 ```
 
+please create a .env file if you are not using Ollama
+```
+GEMINI_API=""
+DEEPSEEK_API=""
+```
+
 After install you can run the program with 
 ```shell
     python main.py
