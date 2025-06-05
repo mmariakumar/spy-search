@@ -31,7 +31,7 @@ After install you can run the program with
     python main.py
 ```
 ## Community 
-Discord[https://discord.gg/rrsMgBdJJt]
+[Discord](https://discord.gg/rrsMgBdJJt)
 
 ## Contribution
 
