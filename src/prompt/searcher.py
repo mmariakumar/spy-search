@@ -34,6 +34,7 @@ def search_plan(task: str, todo: list[str], k: int = 6 , search_engine:list[str]
         - The planning step will be invoked repeatedly as new content is added; base your next steps on the current todo list.
         - If no steps remain, do **not** perform any extra tasks — plan carefully when and what to do.
         - Prioritize executing the right tasks at the right time to maximize efficiency.
+        - After search url you will not get any content, so in your plan if you want content please use other methods after calling get_url function
         
         Please respond strictly using the following JSON format:
 
@@ -43,6 +44,7 @@ def search_plan(task: str, todo: list[str], k: int = 6 , search_engine:list[str]
                 "tool": "<TOOL_NAME>",
                 "keyword": "<SEARCH_KEYWORD>",
                 "search_engine":<EXPECTED SEARCH PAGE>
+                "content": "<EMPTY>"
             }}
         ]
         ```

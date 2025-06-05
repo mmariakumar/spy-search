@@ -4,6 +4,7 @@ from ..model import Model
 from ..prompt.searcher import search_plan
 
 from collections import deque
+import json
 
 class Search_agent(Agent):
     def __init__(self, model:Model, k: int = 10):
@@ -43,12 +44,12 @@ class Search_agent(Agent):
                 AGENT: PLANNER
         """
         print("SEARCHER: RUNNING ")
-        self._plan(task)
+        steps =self._plan(task)
         while len(self.todo):
             task = self.todo.popleft()
-
-
-
+            tool , keyword , search_engine = task['tool'] , task['keyword'] , task['search_engine']
+            print(f"tool: {tool}")
+            print(f"keyword:{keyword}")
 
         return {"agent": "TERMINATE"}
 
@@ -58,16 +59,18 @@ class Search_agent(Agent):
     def get_recv_format(self):
         pass
 
-    def _plan(self , task:str):
+    def _plan(self , task:str , k:int=6):
         """
         Searcher planner
         """
-        prompt = search_plan(task , self.todo)
+        prompt = search_plan(task , self.todo , k)
         res = self.model.completion(prompt)
-        tasks = (self._extract_response(res))
-
+        tasks = json.loads(self._extract_response(res))
+       # print(tasks)
+        k -= len(tasks)
         for task in tasks:
             self.todo.append(task)
+        return k
 
     def _task_handler(self , task:str):
         pass
