@@ -31,12 +31,11 @@ Join us in building the future of fast, affordable search!
 - [x] Add terminal executor
 
 ## v0.3 
-- [] Chart Display
-- [] Better report generation
+- [] User Interface
+- [] Report generation
 - [] Docker
+- [] Email API & Notion API & Obsidian API
 
-## v0.4
-- [] UI with react
 
 ## Thank you everyone's support :) 
 [![Star History Chart](https://api.star-history.com/svg?repos=JasonHonKL/spy-search&type=Date)](https://star-history.com/#JasonHonKL/spy-search&Date)
