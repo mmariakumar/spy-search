@@ -30,6 +30,8 @@ After install you can run the program with
 ```shell
     python main.py
 ```
+## Community 
+Discord[https://discord.gg/rrsMgBdJJt]
 
 ## Contribution
 
