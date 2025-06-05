@@ -13,16 +13,23 @@ While commercial solutions like Manus charge $200 per month, Spy Search leverage
 
 ---
 
+## Installation
+
+We suggest to use uv.
+```shell
+    uv pip install requirements.txt
+```
+
+After install you can run the program with 
+```shell
+    python main.py
+```
+
 ## Contribution
 
 We welcome contributions of all kinds! Please note that Spy Search is currently in a rapid development phase focused on performance optimization. As a result, the codebase is evolving quickly and may undergo significant changes.
 
 Join us in building the future of fast, affordable search!
-
-## v0.1 Finish (30/5)
-- [x] Web search 
-- [x] Chat wiht LLM 
-- [x] RAG with the web search result
 
 ## v0.2 
 - [x] RAG with local document
