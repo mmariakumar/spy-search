@@ -2,6 +2,7 @@
 This project uses markitdown to handle local files. The key is to process types of document
 to markdown.
 """
+
 from openai import OpenAI
 from markitdown import MarkItDown
 
@@ -62,7 +63,9 @@ class LocalRAG:
         patch_counter = 0  # reset counter for metadata
         for p in patch:
             sha_id = hashlib.sha256(p.encode("utf-8")).hexdigest()
-            self.vector_db.add_document(p, sha_id, {"source": path, "patch": patch_counter})
+            self.vector_db.add_document(
+                p, sha_id, {"source": path, "patch": patch_counter}
+            )
             patch_counter += 1
 
     def search_document(self, query: str, k: int = 1):
@@ -70,5 +73,3 @@ class LocalRAG:
 
     def reset_db(self):
         self.vector_db.reset()
-
-

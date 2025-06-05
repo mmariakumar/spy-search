@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 from crawl4ai import LLMConfig
 
+
 class Model(ABC):
     """
     This is an abstraction class for models
@@ -33,5 +34,5 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def get_llm_config(self)->LLMConfig:
-        pass 
+    def get_llm_config(self) -> LLMConfig:
+        pass

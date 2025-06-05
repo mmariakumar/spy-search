@@ -8,9 +8,7 @@ from collections import deque
 
 
 class Planner(Agent):
-    def __init__(
-        self, model: model, query: str , data=None
-    ):
+    def __init__(self, model: model, query: str, data=None):
         self.query = query
         self._model = model
         self._output_model = {}
@@ -19,17 +17,16 @@ class Planner(Agent):
         self.message = []
         self.initialize = False
 
-        self.response = "" 
-        self.db = [] 
-
+        self.response = ""
+        self.db = []
 
     def get_recv_format(self):
-        pass 
+        pass
 
     def get_send_format(self):
         pass
 
-    def run(self, response , data=None):
+    async def run(self, response, data=None):
         """
         It should generate a to do list
         and then pass to different agent
@@ -46,41 +43,28 @@ class Planner(Agent):
             self._response_todo_handler(res)
             self.initialize = True
 
-            # send back to router ? 
+            # send back to router ?
             task = self._todo_list.pop_task()
-            
-            obj = {
-                "agent": task.agent,
-                "task": task.task, 
-                "data": "" 
-            }
+
+            obj = {"agent": task.agent, "task": task.task, "data": ""}
             return obj
         else:
             self._response_handler(response)
             new_task = self._todo_list.pop_task()
             if new_task == None:
-                obj = {
-                    "agent": "TERMINATE",
-                    "task": "TERMINATE",
-                    "data": self.response
-                }
+                obj = {"agent": "TERMINATE", "task": "TERMINATE", "data": self.response}
             else:
-                obj = {
-                    "agent": task.agent,
-                    "task": task.task,
-                    "data": ""
-                }
+                obj = {"agent": task.agent, "task": task.task, "data": ""}
             return obj
 
     def _response_handler(self, response):
         print(response)
 
-
     def add_model(self, model, description):
         """
-            Args:
-                model: agent
-                description: descripe the agent
+        Args:
+            model: agent
+            description: descripe the agent
         """
         self._output_model[model] = description
 
@@ -93,7 +77,7 @@ class Planner(Agent):
         obj = json.loads(texts)
         for response in obj:
             task = response["task"]
-            agent = self._output_model[response["agent"]]
+            agent = response["agent"]
             self._todo_list.add_task(task, agent)
 
 
@@ -101,7 +85,6 @@ class Planner(Agent):
     Private class to handle as a to do list
     One task --> multiple subtask to correct agent
 """
-
 
 
 class _todo:
@@ -124,4 +107,3 @@ class _task:
     def __init__(self, task: str, agent: Agent):
         self.task = task
         self.agent = agent
-

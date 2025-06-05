@@ -1,8 +1,8 @@
 """
-    main function should call a server
+main function should call a server
 
-    each agent should have a router
-    for deatil of router please check router.py
+each agent should have a router
+for deatil of router please check router.py
 """
 
 from .router import Router

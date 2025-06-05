@@ -32,12 +32,9 @@ class Ollama(Model):
 
     def get_model(self):
         return self.model
-    
-    def get_llm_config(self)-> LLMConfig:
-        return LLMConfig(
-            provider="ollama/"+self.model, 
-            api_token=None
-        )
-        
+
+    def get_llm_config(self) -> LLMConfig:
+        return LLMConfig(provider="ollama/" + self.model, api_token=None)
+
     def _append_message(self, role: str, message: str):
         self.message.append({"role": role, "content": message})
