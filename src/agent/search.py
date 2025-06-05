@@ -45,11 +45,23 @@ class Search_agent(Agent):
         """
         print("SEARCHER: RUNNING ")
         steps =self._plan(task)
-        while len(self.todo):
-            task = self.todo.popleft()
+        tools = {} 
+        url_list = []
+        cur_task = 0
+        while cur_task < len(self.todo):
+            task = self.todo[cur_task]
             tool , keyword , search_engine = task['tool'] , task['keyword'] , task['search_engine']
             print(f"tool: {tool}")
             print(f"keyword:{keyword}")
+            match tool:
+                case "url_search":
+                    self._search_url()
+                case "page_content":
+                    self._page_content()
+                case _:
+                    print("TOOL NOT FOUND")
+            cur_task +=1 
+            
 
         return {"agent": "TERMINATE"}
 
@@ -74,3 +86,9 @@ class Search_agent(Agent):
 
     def _task_handler(self , task:str):
         pass
+
+    def _search_url(self):
+        print("Search URL handling ... ")
+
+    def _page_content(self):
+        print("page content handling ... ")

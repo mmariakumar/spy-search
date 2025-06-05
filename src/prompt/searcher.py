@@ -20,6 +20,7 @@ def search_plan(task: str, todo: list[str], k: int = 6 , search_engine:list[str]
             {search_engine}
 
         - **page_content**:  
+        Given list of URL from previous search. 
         Summarize the content and key information from the given pages.  
         This tool should be used **only after** performing `url_search` to obtain URLs to summarize.
         You don't need to answer search_engine for this function.
@@ -35,6 +36,7 @@ def search_plan(task: str, todo: list[str], k: int = 6 , search_engine:list[str]
         - If no steps remain, do **not** perform any extra tasks — plan carefully when and what to do.
         - Prioritize executing the right tasks at the right time to maximize efficiency.
         - After search url you will not get any content, so in your plan if you want content please use other methods after calling get_url function
+        - Your tasks list will be **APPEND** to the list. 
         
         Please respond strictly using the following JSON format:
 
@@ -45,6 +47,7 @@ def search_plan(task: str, todo: list[str], k: int = 6 , search_engine:list[str]
                 "keyword": "<SEARCH_KEYWORD>",
                 "search_engine":<EXPECTED SEARCH PAGE>
                 "content": "<EMPTY>"
+                "COMPLETE": "not started"
             }}
         ]
         ```
