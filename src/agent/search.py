@@ -3,6 +3,8 @@ from ..model import Model
 
 from ..prompt.searcher import search_plan
 
+from collections import deque
+
 class Search_agent(Agent):
     def __init__(self, model:Model, k: int = 10):
         """
@@ -18,7 +20,7 @@ class Search_agent(Agent):
             "https://scholar.google.com",
         ]
 
-        self.todo = []
+        self.todo = deque()
         self.step = 10
 
     def run(self, task, data) -> str:
@@ -42,6 +44,12 @@ class Search_agent(Agent):
         """
         print("SEARCHER: RUNNING ")
         self._plan(task)
+        while len(self.todo):
+            task = self.todo.popleft()
+
+
+
+
         return {"agent": "TERMINATE"}
 
     def get_send_format(self):
@@ -55,8 +63,11 @@ class Search_agent(Agent):
         Searcher planner
         """
         prompt = search_plan(task , self.todo)
-        r = self.model.completion(prompt)
-        print(r)
+        res = self.model.completion(prompt)
+        tasks = (self._extract_response(res))
+
+        for task in tasks:
+            self.todo.append(task)
 
     def _task_handler(self , task:str):
         pass
