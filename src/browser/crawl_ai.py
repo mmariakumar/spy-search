@@ -118,7 +118,8 @@ class Crawl:
         for u in url:
             is_pdf = await self._is_pdf(u)
             if is_pdf:
-                await summary.append(self.get_pdf_summary(u))
+                #await summary.append(await self.get_pdf_summary(u))
+                #current not support pdf first
                 url.remove(u)
 
         self.broswer_conf = BrowserConfig()

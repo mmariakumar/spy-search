@@ -14,7 +14,8 @@ STEP = 10
 
 
 async def main():
-    query = "What is AI Agent ?"
+    query = "What is AI Agent"
+
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
     rag = RAG_agent(model=Deepseek("deepseek-chat"))
@@ -43,8 +44,12 @@ async def main():
         all other agent set up  
     """
     print("Start running GO GO GO ...\n ")
-    response = await server.start(query=query)
-    print(response["data"])
+    report = await server.start(query=query)
+
+    with open("report.md", "w", encoding="utf-8") as file:
+        for paragraph in report:
+            file.write(paragraph + "\n\n")  # write paragraph followed by a blank line
+    
 
 
 if __name__ == "__main__":

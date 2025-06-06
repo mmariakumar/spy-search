@@ -44,7 +44,6 @@ class Server:
                 return query
 
             self.next_router, query, self.data = self.query_handler(query)
-            print(self.data)
 
     def query_handler(self, query: dict):
         """
