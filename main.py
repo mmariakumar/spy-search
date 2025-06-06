@@ -45,7 +45,7 @@ async def main():
     """
     print("Start running GO GO GO ...\n ")
     report = await server.start(query=query)
-    report = "\n".join(report)
+    report = "\n".join(report['data'])
     with open("report.md", "w", encoding="utf-8") as file:
         file.write(report + "\n\n") 
     
