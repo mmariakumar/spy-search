@@ -46,8 +46,8 @@ async def main():
     print("Start running GO GO GO ...\n ")
     report = await server.start(query=query)
     report = "\n".join(report)
-    with open("report.txt", "w", encoding="utf-8") as file:
-        file.write(report + "\n\n")  # write paragraph followed by a blank line
+    with open("report.md", "w", encoding="utf-8") as file:
+        file.write(report + "\n\n") 
     
 
 
