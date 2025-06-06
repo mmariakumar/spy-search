@@ -26,10 +26,16 @@ GEMINI_API=""
 DEEPSEEK_API=""
 ```
 
-After install you can run the program with 
+After install you can run the program with
 ```shell
     python main.py
 ```
+Please change to Ollama if you are using Ollama. 
+
+## Example Report
+[Example](./report.md)
+
+
 ## Community 
 [Discord](https://discord.gg/rrsMgBdJJt)
 
@@ -39,14 +45,10 @@ We welcome contributions of all kinds! Please note that Spy Search is currently 
 
 Join us in building the future of fast, affordable search!
 
-## v0.2 
-- [x] RAG with local document
-- [x] Search with Craw4Ai
-- [x] Complex work flow
-- [x] Add terminal executor
-
 ## v0.3 
 - [] User Interface
+- [] pdf search
+- [] Local search
 - [] Report generation
 - [] Docker
 - [] Email API & Notion API & Obsidian API
