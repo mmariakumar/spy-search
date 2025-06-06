@@ -1,5 +1,5 @@
 from typing import Dict
-def report_prompt(query, data):
+def report_prompt(query, data)->str:
     return f"""
     You are provided with the following dataset:
 
