@@ -176,7 +176,10 @@ class Crawl:
 
         for ele in result:
             page_summary = json.loads(ele.extracted_content)
-            summary.append(page_summary[0])
+            try:
+                summary.append(page_summary[0])
+            except:
+                pass
 
         return summary
 
