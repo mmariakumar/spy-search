@@ -104,10 +104,19 @@ class Reporter(Agent):
             res = self.model.completion(prompt)
             res = self._extract_response(res)
             print(res)
-            res = json.loads(res)
-            tasks[i]["content"] = res['short_summary']
-            final_report += res['content']
-            final_report += '\n'
+            red_flag = False
+            try:
+                res = json.loads(res)
+            except:
+                red_flag = True
+                res = {
+                    "short_summary":"<ERROR>",
+                    "content":"<ERROR>"
+                }
+            if not red_flag:
+                tasks[i]["content"] = res['short_summary']
+                final_report += res['content']
+                final_report += '\n'
             i += 1 
         return final_report
 
