@@ -14,7 +14,7 @@ STEP = 10
 
 
 async def main():
-    query = "What is AI SWE Agent ?"
+    query = "What is AI Agent?"
 
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
@@ -45,7 +45,7 @@ async def main():
     """
     print("Start running GO GO GO ...\n ")
     report = await server.start(query=query)
-    report = "\n".join(report['data'])
+    report = report['data']
     with open("report.md", "w", encoding="utf-8") as file:
         file.write(report + "\n\n") 
     
