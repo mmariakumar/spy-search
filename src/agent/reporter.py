@@ -14,7 +14,7 @@ class Reporter(Agent):
         self.db = None
         self.source = {}
 
-        self.length = 6  # the length of uuid 
+        self.length = 4  # the length of uuid 
 
 
     async def run(self , query:str , data=None):
@@ -22,21 +22,19 @@ class Reporter(Agent):
             based on query and data to write a response 
             Maybe we plan what to write and write a report style ? 
         """
-        
         self.db = self.data_handler(data=data)
         short_summary = self.data_handler(data)
+        print("shrot summary: ")
+        print(short_summary)
 
-        res = self._planner(query=query)
-        tasks = json.loads(self._extract_response(res))
-
+        res = self._planner(query=query , db=short_summary)
+        tasks = self._extract_response(res)
+        tasks = json.loads(tasks)
         print(tasks)
 
         self._task_handler(tasks)
-
         prompt = report_prompt(query , short_summary)
         r = self.model.completion(prompt)
-
-
 
         return {"agent":"TERMINATE" , "data": r , "task":""}
 
@@ -87,14 +85,15 @@ class Reporter(Agent):
     def get_send_format(self):
         pass
 
-    def _planner(self , query):
+    def _planner(self , query , db=None):
         print("planning what to write")
-        prompt = report_prompt(query , self.db)
+        prompt = report_plan(query , db)
         return self.model.completion(prompt)
 
 
     def _task_handler(self, tasks):
         print("handling tasks")
+        print(type(tasks))
         for task in tasks:
             print(task)
     

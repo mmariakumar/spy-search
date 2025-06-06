@@ -33,6 +33,7 @@ def report_plan(query: str, short_summaries: Dict[str, str]) -> str:
         Please follow these guidelines:
         - Plan the tasks in the order they should appear in the final report, as the report will be constructed by sequentially appending each section.
         - Clearly indicate which summary tags you will use as citations for each section, as referencing these sources strengthens the report.
+        - There could be multiple referral
 
         Respond with a JSON array in the following format:
 
@@ -40,7 +41,7 @@ def report_plan(query: str, short_summaries: Dict[str, str]) -> str:
         [
         {{
             "task": "<description of the section or task>",
-            "data": "<corresponding short summary tag(s)>",
+            "data": ["<corresponding short summary tag(s)>" , "" ] ,
             "content": "<leave this empty for now>"
         }}
         ]
