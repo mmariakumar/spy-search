@@ -14,7 +14,7 @@ STEP = 10
 
 
 async def main():
-    query = "What is Ollama ?"
+    query = "What is AI Agent"
 
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
@@ -44,8 +44,10 @@ async def main():
         all other agent set up  
     """
     print("Start running GO GO GO ...\n ")
-    response = await server.start(query=query)
-    print(response["data"])
+    report = await server.start(query=query)
+    with open("report.txt", "w", encoding="utf-8") as file:
+        file.write(report)
+    
 
 
 if __name__ == "__main__":

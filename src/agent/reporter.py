@@ -1,5 +1,5 @@
 from .agent import Agent
-from ..prompt.reporter import report_prompt , report_plan
+from ..prompt.reporter import report_prompt , report_plan , report_task
 
 from ..model import Model
 
@@ -32,9 +32,8 @@ class Reporter(Agent):
         tasks = json.loads(tasks)
         print(tasks)
 
-        self._task_handler(tasks)
-        prompt = report_prompt(query , short_summary)
-        r = self.model.completion(prompt)
+        r = self._task_handler(tasks)
+        print(r)
 
         return {"agent":"TERMINATE" , "data": r , "task":""}
 
@@ -74,7 +73,7 @@ class Reporter(Agent):
     # Suppose you got a short summary id and want to get the long summary
     def get_source(self, summary_ids:list[int])->list[object]:
         sources =[]
-        for item in self.processed_data:
+        for item in self.source:
             if item['id'] in summary_ids:
                 sources.append(item)
         return sources
@@ -93,9 +92,25 @@ class Reporter(Agent):
 
     def _task_handler(self, tasks):
         print("handling tasks")
-        print(type(tasks))
+        i = 0 
+        final_report = ""
         for task in tasks:
-            print(task)
+            t = task['task']
+            data=task['data']
+            print(t , data)
+            source = self.get_source(data)
+            print(source)
+            prompt = report_task(tasks , t , source)
+            res = self.model.completion(prompt)
+            res = self._extract_response(res)
+            print(res)
+            res = json.loads(res)
+            tasks[i]["content"] = res['short_summary']
+            final_report += res['content']
+            final_report += '\n'
+            i += 1 
+        return final_report
+
     
     def _get_relevant_data(self):
         pass
