@@ -28,7 +28,7 @@ DEEPSEEK_API=""
 
 After install you can run the program with
 ```shell
-    python main.py
+    ./run.sh
 ```
 Please change to Ollama if you are using Ollama. 
 
