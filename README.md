@@ -14,16 +14,32 @@ While commercial solutions like Manus charge $200 per month, Spy Search leverage
 ---
 
 ## Installation
+First you have to clone the repo
+```shell
+    git clone https://github.com/JasonHonKL/spy-search.git
+```
 
 We suggest to use uv.
 ```shell
-    uv pip install requirements.txt
+   ./installation.sh 
 ```
 
 please create a .env file if you are not using Ollama
+Currently we support gemini and deepseek
 ```
 GEMINI_API=""
 DEEPSEEK_API=""
+```
+
+create a config.json file, you may copy the following template
+```json
+{
+    "provider": "ollama",
+    "model": "deepseek-r1:7b",
+    "agents": [
+        "reporter"
+    ]
+}
 ```
 
 After install you can run the program with
