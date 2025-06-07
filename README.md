@@ -48,7 +48,7 @@ Join us in building the future of fast, affordable search!
 ## v0.3 
 - [x] User Interface
 - [x] pdf search
-- [] API
+- [x] API
 - [] Add log feature
 - [] Local search
 - [] Report generation (pdf)
