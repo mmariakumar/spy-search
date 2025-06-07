@@ -10,6 +10,12 @@ class Ollama(Model):
         self.model = model
         self.message = []
 
+    def set_api(self, api):
+        """
+            no need to do anything
+        """
+        return 
+
     def completion(self, message: str, stream: str = False):
         self._append_message(message=message, role="user")
         msg_cache = ""

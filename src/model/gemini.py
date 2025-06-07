@@ -18,6 +18,9 @@ class Gemini(Model):
         self.client = genai.Client(api_key=self.api_key)
         self.message = self.client.chats.create(model=model)
 
+    def set_api(self , api):
+        self.api = api
+        
     def completion(self, query: str):
         res = self.message.send_message(query)
         return res.text

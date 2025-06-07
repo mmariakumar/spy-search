@@ -2,27 +2,47 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Settings, Eye } from "lucide-react";
-import { ReportGenerator } from "@/components/ReportGenerator";
-import { LLMConfig } from "@/components/LLMConfig";
+import { Settings, Eye, MessageSquare } from "lucide-react";
+import { ChatInterface } from "@/components/ChatInterface";
+import { AgentConfig } from "@/components/AgentConfig";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const [apiConfig, setApiConfig] = useState({
-    provider: "openai",
-    apiKey: "",
-    model: "gpt-4",
-    agents: ["planner"]
-  });
+  const [agents, setAgents] = useState<string[]>(["planner", "reporter"]);
   const { toast } = useToast();
 
-  const handleConfigSave = (config: typeof apiConfig) => {
-    setApiConfig(config);
-    localStorage.setItem('spy-search-config', JSON.stringify(config));
-    toast({
-      title: "Configuration Saved",
-      description: "Your settings have been saved successfully.",
-    });
+  const handleAgentConfigSave = async (selectedAgents: string[]) => {
+    setAgents(selectedAgents);
+    
+    // Send agent selection to backend (excluding planner)
+    const agentsToSend = selectedAgents.filter(agent => agent !== "planner");
+    
+    try {
+      const response = await fetch('http://localhost:8000/agents_selection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ agents: agentsToSend }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Agent Configuration Saved",
+          description: "Your agent selection has been saved successfully.",
+        });
+      } else {
+        throw new Error("Failed to save configuration");
+      }
+    } catch (error) {
+      toast({
+        title: "Configuration Failed",
+        description: "Failed to save agent configuration. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -45,30 +65,20 @@ const Index = () => {
 
         {/* Main Content */}
         <div className="max-w-5xl mx-auto">
-          <Tabs defaultValue="generate" className="w-full">
+          <Tabs defaultValue="chat" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-12 bg-secondary/50 backdrop-blur-sm border border-border/50">
-              <TabsTrigger value="generate" className="flex items-center gap-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                <Search className="h-4 w-4" />
-                Generate Report
+              <TabsTrigger value="chat" className="flex items-center gap-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <MessageSquare className="h-4 w-4" />
+                Intelligence Chat
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <Settings className="h-4 w-4" />
-                Configuration
+                Agent Configuration
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="generate" className="space-y-8">
-              <Card className="glass-card border-0">
-                <CardHeader className="pb-8">
-                  <CardTitle className="flex items-center gap-3 text-2xl font-light">
-                    <Search className="h-6 w-6 text-primary" />
-                    Intelligence Report Generation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ReportGenerator apiConfig={apiConfig} />
-                </CardContent>
-              </Card>
+            <TabsContent value="chat" className="space-y-8">
+              <ChatInterface agents={agents} />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-8">
@@ -76,13 +86,13 @@ const Index = () => {
                 <CardHeader className="pb-8">
                   <CardTitle className="flex items-center gap-3 text-2xl font-light">
                     <Settings className="h-6 w-6 text-primary" />
-                    System Configuration
+                    Agent Configuration
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <LLMConfig
-                    config={apiConfig}
-                    onConfigSave={handleConfigSave}
+                  <AgentConfig
+                    agents={agents}
+                    onAgentConfigSave={handleAgentConfigSave}
                   />
                 </CardContent>
               </Card>

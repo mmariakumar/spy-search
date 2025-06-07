@@ -3,25 +3,18 @@ from src.agent.search import Search_agent
 from src.model.deepseek import Deepseek
 from src.agent.reporter import Reporter
 
-from src.router import Server, Router
-
-
-from src.main import generate_report
+from src.main import generate_report , read_config
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
 STEP = 10
 
-
-async def main(query):
-    print("init")
+async def main(query ,api:str = None):
     planner = Planner(Deepseek("deepseek-chat"),query)
     agents = [Search_agent(Deepseek("deepseek-chat")) , Reporter(Deepseek("deepseek-chat"))]
-    print("finish set up ")
     r  = await generate_report(query , planner , agents)
     return r
-
 
 app = FastAPI()
 
@@ -45,4 +38,11 @@ async def report(query):
     r = await main(query)
     return {"report":r}
 
+@app.get("/config")
+async def get_config():
+    r = read_config()
+    return r 
 
+@app.post("/agents_selection")
+async def select_agent():
+    return {"success":True}

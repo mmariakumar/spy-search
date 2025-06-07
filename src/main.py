@@ -1,8 +1,9 @@
 """
     This is the main function of the agent
 """
-from src.agent import Planner , Search_agent , Reporter, Agent
-from src.model import Deepseek , Ollama , Gemini , Model
+import json 
+
+from src.agent import Planner, Agent
 from src.router import Server , Router 
 
 async def generate_report(query , planner:Planner , agents:list[Agent]):
@@ -23,6 +24,15 @@ async def generate_report(query , planner:Planner , agents:list[Agent]):
 
     with open("report.md", "w", encoding="utf-8") as file:
         file.write(report + "\n\n") 
-    #
     return report
     
+def read_config():
+    """
+        TODO: should this be place in util folder ?  
+    """
+    with open("./config.json", 'r') as file:
+        content = file.read()
+        config = json.loads(content)
+    return config
+
+
