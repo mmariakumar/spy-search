@@ -35,10 +35,7 @@ class RAG_agent(Agent):
             res: the response should be a json string. If it is pure response it should pass to _extract_response first before
             passing to _json_handle
         """
-        obj = json.loads(res)
-        print(obj)
-        print(obj["tool"])
-        print(obj["args"])
+        pass
 
     def get_recv_format(self):
         pass
