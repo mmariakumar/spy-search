@@ -13,8 +13,7 @@ from src.RAG.summary import Summary
 STEP = 10
 
 
-async def main():
-    query = input("Question: ")
+async def main(query):
 
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
@@ -44,12 +43,26 @@ async def main():
     print("Start running GO GO GO ...\n ")
     report = await server.start(query=query)
     report = report['data']
-    with open("report.md", "w", encoding="utf-8") as file:
-        file.write(report + "\n\n") 
+    #with open("report.md", "w", encoding="utf-8") as file:
+     #   file.write(report + "\n\n") 
+    #
+    return report
+
     
 
 
-if __name__ == "__main__":
-    import asyncio
+from fastapi import FastAPI
 
-    asyncio.run(main())
+app = FastAPI()
+
+@app.get("/")
+async def test():
+    return {"message" : "hello world"}
+
+
+@app.get("/report/{query}")
+async def report(query):
+    r = await main(query)
+    return {"report":r}
+    
+#    asyncio.run(main())
