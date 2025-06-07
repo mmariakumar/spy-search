@@ -1,4 +1,7 @@
 {
-    "provider":"deepseek",
-    "model":"deepseek-chat"
+    "provider": "deepseek",
+    "model": "deepseek-chat",
+    "agents": [
+        "reporter"
+    ]
 }

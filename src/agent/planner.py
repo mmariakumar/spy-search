@@ -8,7 +8,7 @@ from collections import deque
 
 
 class Planner(Agent):
-    def __init__(self, model: model, query: str, data=None):
+    def __init__(self, model: model, query: str= "", data=None):
         self.query = query
         self._model = model
         self._output_model = {}

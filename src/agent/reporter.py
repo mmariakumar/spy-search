@@ -102,7 +102,7 @@ class Reporter(Agent):
         final_report = ""
         for task in tasks:
             t = task['task']
-            data=task['data']
+            data=task.get('data' , "")
             print(t , data)
             source = self.get_source(data)
             print(source)
