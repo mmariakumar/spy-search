@@ -15,18 +15,27 @@ class RAG_agent(Agent):
         path: db path , default "./db"
     """
 
-    def __init__(self, model, path: str = "./db"):
+    def __init__(self, model, path: str = "./db" , name = "local_db"):
         self.model = model
-        self.db = VectorSearch(path=path)
+        self.db = VectorSearch(path=path , name=name)
         self.tool_list = ["add_document", "query", "reset"]
 
-    def run(self, task: str) -> str:
-        self.task = task
-        self.prompt = retrival_agent_prompt(self.tool_list, task=task)
-        res = self.model.completion(self.prompt)
-        json_res = self._extract_response(res)
-        self._json_handler(json_res)
-        return ""
+    async def run(self, task: str , data) -> str:
+        # when rest ? 
+        """
+        workflow:
+             
+        """
+        print("handling retrival")
+
+        # data should always use the same format as retrival ? 
+
+        # data should always append
+
+        # dk too
+
+        return {"agent":"planner" , "data":data , "task" : ""}
+  
 
     def _json_handler(self, res: str):
         """

@@ -69,6 +69,7 @@ def report_task(tasks, task, source):
         - The content should be approximately 400-500 words.
         - Please ensure accuracy and clarity in your report.
         - Ensure the content is coherent.
+        - use APA citation with title & url. **NOT ID**
 
         Respond in the following JSON format:
 
