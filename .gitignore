@@ -5,3 +5,4 @@ local_db/
 .env
 tmp/
 node_modules/
+.next/
