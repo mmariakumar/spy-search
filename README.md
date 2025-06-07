@@ -19,7 +19,7 @@ First you have to clone the repo
     git clone https://github.com/JasonHonKL/spy-search.git
 ```
 
-We suggest to use uv.
+We suggest to use uv. (we assume you are using python if your command is python3 , then change the script to python3)
 ```shell
    ./installation.sh 
 ```
