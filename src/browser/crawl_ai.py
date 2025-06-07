@@ -76,7 +76,7 @@ class Crawl:
                     - The URL should be the full link to the webpage.
                     - The title should be the main heading or the title of the webpage.
                     - The description should be a concise summary or snippet describing the webpage content.
-                    - Please return top 2 meaningful URL.
+                    - Please return top 5 meaningful URL.
 
                     Return the result strictly in the JSON schema format as defined:
 
@@ -118,7 +118,12 @@ class Crawl:
         for u in url:
             is_pdf = await self._is_pdf(u)
             if is_pdf:
-                #await summary.append(await self.get_pdf_summary(u))
+                try:
+                    content = await self.get_pdf_summary(u)
+                    response = await summary.append(content)
+                    summary.append(response)
+                except Exception as e:
+                    print("Handling pdf error: ", e)
                 #current not support pdf first
                 url.remove(u)
 
@@ -144,8 +149,8 @@ class Crawl:
                     "title": "string",
                     "summary": "string",
                     "brief_summary": "string",
-                    "keywords": ["string", "string", ...]
-                    "url": "string
+                    "keywords": ["string", "string", ...],
+                    "url": "string,
                 }}
                 
                 If the content is not relevant to the query, return:
@@ -155,8 +160,8 @@ class Crawl:
                 "title": "error",
                 "summary": "error",
                 "brief_summary": "error",
-                "keywords": null
-                "url": ""
+                "keywords": null, 
+                "url": "",
                 }}
             
 

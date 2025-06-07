@@ -108,6 +108,7 @@ class Search_agent(Agent):
         """
         # test with google first
         # result is an array 
+
         print("Search URL handling ... ")
 
         result = await self.crawl.get_url_llm("https://google.com/search?q="+query , query)
