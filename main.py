@@ -9,7 +9,7 @@ from src.router import Server, Router
 
 from src.RAG.summary import Summary
 
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
 STEP = 10
@@ -53,6 +53,22 @@ async def main(query):
 
 app = FastAPI()
 
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 @app.get("/")
 async def test():
     return {"message" : "hello world"}
@@ -62,7 +78,4 @@ async def test():
 async def report(query):
     r = await main(query)
     return {"report":r}
-    # what if there are multiple message
-    # like a follow up question 
-
 #    asyncio.run(main())
