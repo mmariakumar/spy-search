@@ -28,7 +28,7 @@ DEEPSEEK_API=""
 
 After install you can run the program with
 ```shell
-    python main.py
+    ./run.sh
 ```
 Please change to Ollama if you are using Ollama. 
 
@@ -46,11 +46,12 @@ We welcome contributions of all kinds! Please note that Spy Search is currently 
 Join us in building the future of fast, affordable search!
 
 ## v0.3 
-- [] User Interface
+- [x] User Interface
 - [x] pdf search
+- [] API
 - [] Add log feature
 - [] Local search
-- [] Report generation
+- [] Report generation (pdf)
 - [] Docker
 - [] Email API & Notion API & Obsidian API
 

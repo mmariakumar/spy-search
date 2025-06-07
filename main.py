@@ -9,12 +9,13 @@ from src.router import Server, Router
 
 from src.RAG.summary import Summary
 
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
 
 STEP = 10
 
 
-async def main():
-    query = input("Question: ")
+async def main(query):
 
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
@@ -46,10 +47,35 @@ async def main():
     report = report['data']
     with open("report.md", "w", encoding="utf-8") as file:
         file.write(report + "\n\n") 
-    
+    #
+    return report
 
 
-if __name__ == "__main__":
-    import asyncio
+app = FastAPI()
 
-    asyncio.run(main())
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/")
+async def test():
+    return {"message" : "hello world"}
+
+
+@app.get("/report/{query}")
+async def report(query):
+    r = await main(query)
+    return {"report":r}
+#    asyncio.run(main())
