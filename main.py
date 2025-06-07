@@ -10,6 +10,8 @@ from src.router import Server, Router
 from src.RAG.summary import Summary
 
 
+from fastapi import FastAPI
+
 STEP = 10
 
 
@@ -48,10 +50,6 @@ async def main(query):
     #
     return report
 
-    
-
-
-from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -64,5 +62,7 @@ async def test():
 async def report(query):
     r = await main(query)
     return {"report":r}
-    
+    # what if there are multiple message
+    # like a follow up question 
+
 #    asyncio.run(main())
