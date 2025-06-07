@@ -49,8 +49,11 @@ def summary_prompt(content: str, db: list[str]) -> str:
 
          ```json
          {{
-            "full_summary": "Your detailed summary focusing on novel information here...",
-            "short_summary": "Your concise, distinguishing short summary here..."
+            "title":"Title of this response",
+            "summary": "Your detailed summary focusing on novel information here...",
+            "brief_summary": "Your concise, distinguishing short summary here..."
+            "keywords":["keyword_1" , ... ],
+            "url":"string",
          }}
          ```
 

@@ -47,7 +47,8 @@ Join us in building the future of fast, affordable search!
 
 ## v0.3 
 - [] User Interface
-- [] pdf search
+- [x] pdf search
+- [] Add log feature
 - [] Local search
 - [] Report generation
 - [] Docker

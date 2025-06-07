@@ -14,7 +14,7 @@ STEP = 10
 
 
 async def main():
-    query = "Financial Report: Nvdia"
+    query = input("Question: ")
 
     planner = Planner(model=Deepseek("deepseek-chat"), query=query)
     searcher = Search_agent(model=Deepseek("deepseek-chat"))
@@ -27,8 +27,6 @@ async def main():
     planner.add_model(
         model="reporter", description="generateing report"
     )
-    # planner.add_model(model="rag",description="Vector search relevant local content")
-    # planner.add_model(model="reporter" , description="Summarize and write report based on given content")
 
     server = Server()
     planner_router = Router(server, planner)
