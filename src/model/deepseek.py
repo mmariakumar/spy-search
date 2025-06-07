@@ -9,12 +9,15 @@ import os
 
 
 class Deepseek(Model):
-    def __init__(self, model):
+    def __init__(self, model , api_key:str = ""):
         load_dotenv()
-        self.api_key = os.getenv("DEEPSEEK_API")
+        self.api_key = os.getenv("DEEPSEEK_API") if api_key == "" else api_key
         self.model = model
         self.client = OpenAI(api_key=self.api_key, base_url="https://api.deepseek.com")
         self.messages = []
+
+    def set_api(self , api_key:str):
+        self.api_key = api_key
 
     def completion(self, query):
         self._add_message(query)

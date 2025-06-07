@@ -12,10 +12,16 @@ class Reporter(Agent):
         self.model:Model = model
         self.todo = []
         self.db = None
+
+        self.description = "generateing report"
+
         self.source = {}
+        self.name = "reporter"
 
         self.length = 4  # the length of uuid 
 
+    def set_name(self, name):
+        self.name = name
 
     async def run(self , query:str , data=None):
         """
@@ -96,7 +102,7 @@ class Reporter(Agent):
         final_report = ""
         for task in tasks:
             t = task['task']
-            data=task['data']
+            data=task.get('data' , "")
             print(t , data)
             source = self.get_source(data)
             print(source)

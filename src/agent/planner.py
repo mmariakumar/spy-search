@@ -8,7 +8,7 @@ from collections import deque
 
 
 class Planner(Agent):
-    def __init__(self, model: model, query: str, data=None):
+    def __init__(self, model: model, query: str= "", data=None):
         self.query = query
         self._model = model
         self._output_model = {}
@@ -19,12 +19,17 @@ class Planner(Agent):
 
         self.response = ""
         self.db = []
+        self.name = "planner"
+        self.description = "plan the tasks"
 
     def get_recv_format(self):
         pass
 
     def get_send_format(self):
         pass
+
+    def set_name(self , name):
+        self.name = name
 
     async def run(self, response, data=None):
         """

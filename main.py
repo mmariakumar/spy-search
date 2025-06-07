@@ -1,55 +1,28 @@
 from src import Planner
 from src.agent.search import Search_agent
-from src.agent.retrival import RAG_agent
 from src.model.deepseek import Deepseek
-from src.browser.crawl_ai import Crawl
 from src.agent.reporter import Reporter
+from src.factory import Factory
 
-from src.router import Server, Router
+from src.main import generate_report , read_config
 
-from src.RAG.summary import Summary
+from api.server import AgentsRequest
+import json 
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
 STEP = 10
 
-
-async def main(query):
-
-    planner = Planner(model=Deepseek("deepseek-chat"), query=query)
-    searcher = Search_agent(model=Deepseek("deepseek-chat"))
-    rag = RAG_agent(model=Deepseek("deepseek-chat"))
-    reporter = Reporter(model=Deepseek("deepseek-chat"))
-
-    planner.add_model(
-        model="searcher", description="Search latest information"
-    )
-    planner.add_model(
-        model="reporter", description="generateing report"
-    )
-
-    server = Server()
-    planner_router = Router(server, planner)
-    searcher_router = Router(server , searcher)
-    report_router = Router(server, reporter)
-
-    server.add_router("planner", planner_router)
-    server.add_router("searcher", searcher_router)
-    server.add_router("reporter" , report_router)
-    server.set_initial_router("planner", query)
-
-    """
-        all other agent set up  
-    """
-    print("Start running GO GO GO ...\n ")
-    report = await server.start(query=query)
-    report = report['data']
-    with open("report.md", "w", encoding="utf-8") as file:
-        file.write(report + "\n\n") 
-    #
-    return report
-
+async def main(query ,api:str = None):
+    config = read_config()
+    m = Factory.get_model(config['provider'] , config['model'])
+    planner = Planner(m)
+    agents = []
+    for agent in config['agents']:
+        agents.append(Factory.get_agent(agent , m))
+    r  = await generate_report(query , planner , agents)
+    return r
 
 app = FastAPI()
 
@@ -69,13 +42,25 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def test():
-    return {"message" : "hello world"}
-
-
 @app.get("/report/{query}")
 async def report(query):
     r = await main(query)
     return {"report":r}
-#    asyncio.run(main())
+
+
+@app.post("/agents_selection")
+async def select_agent(body: AgentsRequest):
+    """
+        Read the request 
+        ==> save it to the config.json  
+        shouldn't the config save in client side ? 
+    """
+    print("Parsed agents list:", body.agents)
+    arr = [] 
+    for a in body.agents:
+        arr.append(a)
+    config = read_config()
+    config['agents'] = arr
+    with open('./config.json' , 'w') as f:
+        json.dump(config , f , indent=4)
+    return {"success": True, "agents_received": body.agents}

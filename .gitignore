@@ -6,3 +6,4 @@ local_db/
 tmp/
 node_modules/
 .next/
+.DS_Store/
