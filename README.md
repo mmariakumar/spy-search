@@ -17,6 +17,7 @@ While commercial solutions like Manus charge $200 per month, Spy Search leverage
 First you have to clone the repo
 ```shell
 git clone https://github.com/JasonHonKL/spy-search.git
+cd spy-search
 ```
 
 To set up just run 
@@ -44,9 +45,6 @@ docker run -p 8000:8000 -p 8080:8080 spy-searcher
 Now you can access  
 [http://localhost:8000](http://localhost:8000)
 
-## Example Report
-[Example](./report.md)
-
 
 ## Community 
 [Discord](https://discord.gg/rrsMgBdJJt)
@@ -56,6 +54,7 @@ Now you can access
 We welcome contributions of all kinds! Please note that Spy Search is currently in a rapid development phase focused on performance optimization. As a result, the codebase is evolving quickly and may undergo significant changes.
 
 Join us in building the future of fast, affordable search!
+
 
 ## Thank you everyone's support :) 
 [![Star History Chart](https://api.star-history.com/svg?repos=JasonHonKL/spy-search&type=Date)](https://star-history.com/#JasonHonKL/spy-search&Date)
