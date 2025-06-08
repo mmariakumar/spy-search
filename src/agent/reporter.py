@@ -7,6 +7,8 @@ import string
 import secrets
 import json 
 
+import time
+
 class Reporter(Agent):
     def __init__(self, model:Model):
         self.model:Model = model
@@ -33,7 +35,11 @@ class Reporter(Agent):
         print("shrot summary: ")
         print(short_summary)
 
-        res = self._planner(query=query , db=short_summary)
+        res = await self._planner(query=query , db=short_summary)
+
+        print(f"res{res}")
+        time.sleep(3) # foo foo solution
+        # problem it is not yet response and then it return and the problem is it can't extract correct res afterward
         tasks = self._extract_response(res)
         tasks = json.loads(tasks)
         print(tasks)
@@ -90,10 +96,11 @@ class Reporter(Agent):
     def get_send_format(self):
         pass
 
-    def _planner(self , query , db=None):
+    async def _planner(self , query , db=None):
         print("planning what to write")
         prompt = report_plan(query , db)
-        return self.model.completion(prompt)
+        res = self.model.completion(prompt)
+        return res
 
 
     def _task_handler(self, tasks):
