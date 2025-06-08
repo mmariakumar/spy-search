@@ -55,16 +55,6 @@ We welcome contributions of all kinds! Please note that Spy Search is currently 
 
 Join us in building the future of fast, affordable search!
 
-## v0.3 
-- [x] User Interface
-- [x] pdf search
-- [x] API
-- [] Add log
-- [] Local search
-- [x] Report generation (pdf)
-- [x] Docker
-- [] Email API & Notion API & Obsidian API
-
 
 ## Thank you everyone's support :) 
 [![Star History Chart](https://api.star-history.com/svg?repos=JasonHonKL/spy-search&type=Date)](https://star-history.com/#JasonHonKL/spy-search&Date)

@@ -57,7 +57,7 @@ app.add_middleware(
 )
 
 
-
+# TODO REFACTOR ! 
 @app.post("/report/{query}")
 async def report(
     query: str,
@@ -132,3 +132,7 @@ async def select_agent(body: AgentsRequest):
     with open('./config.json' , 'w') as f:
         json.dump(config , f , indent=4)
     return {"success": True, "agents_received": body.agents}
+
+@app.post("/model_selection")
+async def model_selection():
+    return {"Error" :"Not yet support"}
