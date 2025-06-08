@@ -38,6 +38,7 @@ class Planner(Agent):
         """
         # Initialization
         # only run for oen time
+        print("planner running...")
         if not self.initialize:
             prompt = planner_agent_prompt(
                 list(self._output_model.keys()),
@@ -50,6 +51,7 @@ class Planner(Agent):
 
             # send back to router ?
             task = self._todo_list.pop_task()
+            print(task)
 
             obj = {"agent": task.agent, "task": task.task, "data": ""}
             return obj

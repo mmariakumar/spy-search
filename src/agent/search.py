@@ -54,6 +54,7 @@ class Search_agent(Agent):
                 AGENT: PLANNER
         """
         print("SEARCHER: RUNNING ")
+        print("f{self.todo} testing..")
         steps =self._plan(task)
         tools = {} 
         url_list = []
@@ -63,10 +64,11 @@ class Search_agent(Agent):
         for d in data:
             cur_db.append(d["summary_list"])
         query = task 
-        
+
         while cur_task < len(self.todo):
-            task = self.todo[cur_task]
-            tool , keyword , search_engine = task['tool'] , task['keyword'] , task['search_engine']
+            new_task = self.todo[cur_task]
+            print(f"new task: {new_task}")
+            tool , keyword , search_engine = new_task['tool'] , new_task['keyword'] , new_task['search_engine']
 
             match tool: 
                 case "url_search":
@@ -96,11 +98,11 @@ class Search_agent(Agent):
         prompt = search_plan(task , self.todo , k)
         res = self.model.completion(prompt)
         tasks = json.loads(self._extract_response(res))
-       # print(tasks)
+        print(tasks)
         k -= len(tasks)
-        for task in tasks:
-            self.todo.append(task)
-        
+        for todo in tasks:
+            self.todo.append(todo)
+        print(f"self.todo in searcher: {self.todo}") 
         #print(tasks)
         return k
 
