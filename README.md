@@ -49,6 +49,13 @@ Now you can access
 ## Community 
 [Discord](https://discord.gg/rrsMgBdJJt)
 
+
+## Example 
+
+- [Example Report (HTML)](./docs/examples/example_report.html)
+
+![Example Search](./docs/examples/example_search.png)
+
 ## Contribution
 
 We welcome contributions of all kinds! Please note that Spy Search is currently in a rapid development phase focused on performance optimization. As a result, the codebase is evolving quickly and may undergo significant changes.
