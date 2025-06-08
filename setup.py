@@ -10,6 +10,7 @@ if __name__ == "__main__":
     env_content = """
     DEEPSEEK_API=<YOUR-DEEPSEEK-API>
     GEMINI_API=<YOU-GEMINI-API>
+    XAI_API_KEY=<XAI API KEY>
     """
     create_env_file(file_path, env_content)
     print(f".env file created at {os.path.abspath(file_path)}")
