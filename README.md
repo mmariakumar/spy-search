@@ -3,6 +3,7 @@
 **Spy Search** is an agentic search framework designed to outperform current web search agents with a focus on faster, more efficient daily usage.
 
 While commercial solutions like Manus charge $200 per month, Spy Search leverages open-source models to provide a cost-effective alternative without sacrificing performance.
+Currently our searching-speed is quite slow yet we can generate a long length consistent report (around 2000 words) with latest current infomration! This problem will be tackle after the release of v1.0. 
 
 ---
 
