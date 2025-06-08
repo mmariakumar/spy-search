@@ -1,0 +1,19 @@
+## v0.3 
+- [x] User Interface
+- [x] pdf search
+- [x] API
+- [] Add log
+- [] Local search
+- [x] Report generation (pdf)
+- [x] Docker
+
+
+## v0.4
+- [] Email API & Notion API & Obsidian API
+- [] MCP 
+- [] Google API 
+- [] Refactor
+- [] Support multie site search (now only do google)
+
+## v0.5
+- [] fast search with other programming language
