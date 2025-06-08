@@ -27,6 +27,7 @@ def planner_agent_prompt(
     - However, if updated information or research can improve accuracy, use the agent specialized in searching accordingly.
     - Ensure each subtask is specific and well-defined.
     - Your response must be strictly in the following JSON format, including the triple backticks and the "json" language tag exactly as shown. This is critical for proper parsing:
+    - You should only call one time reporter to generate a full report ! 
 
     ```json
     [
