@@ -65,7 +65,7 @@ Join us in building the future of fast, affordable search!
 - [x] User Interface
 - [x] pdf search
 - [x] API
-- [] Add log feature
+- [] Add log
 - [] Local search
 - [x] Report generation (pdf)
 - [] Docker

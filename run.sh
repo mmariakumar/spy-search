@@ -11,7 +11,7 @@ trap cleanup SIGINT SIGTERM
 
 # Start backend
 echo "Starting FastAPI backend..."
-uvicorn main:app &
+uvicorn main:app --host 0.0.0.0 &
 BACKEND_PID=$!
 
 sleep 2
