@@ -38,5 +38,8 @@ class Deepseek(Model):
     def get_model(self):
         return self.model
 
+    def clear_message(self):
+        self.messages = []
+
     def _add_message(self, message, role="use"):
         self.messages.append({"role": "user", "content": message})

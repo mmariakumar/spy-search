@@ -41,3 +41,7 @@ class Model(ABC):
     @abstractmethod
     def set_api(self , api:str) -> None:
         pass
+
+    @abstractmethod
+    def clear_message(self):
+        pass

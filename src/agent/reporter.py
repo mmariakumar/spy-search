@@ -101,12 +101,13 @@ class Reporter(Agent):
         i = 0 
         final_report = ""
         for task in tasks:
-            t = task['task']
+            t = task.get("task",  "") 
             data=task.get('data' , "")
             print(t , data)
             source = self.get_source(data)
             print(source)
             prompt = report_task(tasks , t , source)
+            self.model.clear_message()
             res = self.model.completion(prompt)
             res = self._extract_response(res)
             print(res)

@@ -42,5 +42,10 @@ class Ollama(Model):
     def get_llm_config(self) -> LLMConfig:
         return LLMConfig(provider="ollama/" + self.model, api_token=None)
 
+    def clear_message(self):
+        self.messages = []
+
     def _append_message(self, role: str, message: str):
         self.messages.append({"role": role, "content": message})
+
+    

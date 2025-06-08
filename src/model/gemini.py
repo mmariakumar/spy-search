@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 from .model import Model
 
 
+"""
+    refactor to openai versoin
+"""
 class Gemini(Model):
     def __init__(self, model):
         load_dotenv()
@@ -17,6 +20,9 @@ class Gemini(Model):
         self.model = model
         self.client = genai.Client(api_key=self.api_key)
         self.messages = self.client.chats.create(model=model)
+
+    def clear_message(self):
+        self.messages = self.client.chats.create(model=self.model)
 
     def set_api(self , api):
         self.api = api
