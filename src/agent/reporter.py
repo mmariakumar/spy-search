@@ -9,6 +9,8 @@ import json
 
 import time
 
+import logging 
+logger = logging.getLogger(__name__)
 
 class Reporter(Agent):
     def __init__(self, model: Model):
@@ -33,20 +35,22 @@ class Reporter(Agent):
         """
         self.db = self.data_handler(data=data)
         short_summary = self.data_handler(data)
-        print("shrot summary: ")
-        print(short_summary)
+
+        logger.info(f"short summary {short_summary}")
 
         res = await self._planner(query=query, db=short_summary)
 
-        print(f"res{res}")
-        time.sleep(3)  # foo foo solution
+        logger.info(f"reporter response {res}")
+
         # problem it is not yet response and then it return and the problem is it can't extract correct res afterward
         tasks = self._extract_response(res)
         tasks = json.loads(tasks)
-        print(tasks)
+
+        logger.info(f"handling tasks {tasks}") 
 
         r = self._task_handler(tasks)
-        print(r)
+
+        logger.info(f"response {r}")
 
         return {"agent": "TERMINATE", "data": r, "task": ""}
 
@@ -100,19 +104,24 @@ class Reporter(Agent):
         return res
 
     def _task_handler(self, tasks):
-        print("handling tasks")
         i = 0
         final_report = ""
         for task in tasks:
             t = task.get("task", "")
             data = task.get("data", "")
-            print(t, data)
+
+            logger.info(f"handling task {t}")
+
             source = self.get_source(data)
-            print(source)
+
+            logger.info(f"reading sources ... {source}")
+
             prompt = report_task(tasks, t, source)
             res = self.model.completion(prompt)
             res = self._extract_response(res)
-            print(res)
+
+            logger.info(f"getting response {res}")
+
             red_flag = False
             try:
                 res = json.loads(res)

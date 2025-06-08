@@ -10,6 +10,9 @@ import json
 
 import time 
 
+import logging 
+logger = logging.getLogger(__name__)
+
 class Search_agent(Agent):
     def __init__(self, model:Model, k: int = 10):
         """
@@ -55,8 +58,8 @@ class Search_agent(Agent):
                 for response we just need to response "FINISHED"
                 AGENT: PLANNER
         """
-        print("SEARCHER: RUNNING ")
-        print(f"{self.todo} testing..")
+        logger.info("SEARCHER: RUNNING ")
+        logger.info(f"{self.todo} testing..")
         steps =self._plan(task)
         tools = {} 
         url_list = []
@@ -69,7 +72,7 @@ class Search_agent(Agent):
 
         while cur_task < len(self.todo):
             new_task = self.todo[cur_task]
-            print(f"new task: {new_task}")
+            logger.info(f"new task: {new_task}")
             tool , keyword , search_engine = new_task.get('tool', '') , new_task.get('keyword' , '') , new_task.get("search_engine" , "")
 
             match tool: 
@@ -78,11 +81,11 @@ class Search_agent(Agent):
                     for url in urls:
                         self.url_list.append(url)
                 case "page_content":
-                    #print(self.url_list)
+                    #logger.info(self.url_list)
                     await self._page_content(query)
                     self.url_list = [] 
                 case _:
-                    print("TOOL NOT FOUND")
+                    logger.info("TOOL NOT FOUND")
             cur_task +=1 
 
         return {"agent": "planner" , "data":self.db , "task":""}
@@ -98,20 +101,20 @@ class Search_agent(Agent):
         Searcher planner
         """
         prompt = search_plan(task , self.todo , k)
-        print(f"task {task}")
-        print(prompt)
+        logger.info(f"task {task}")
+        logger.info(prompt)
 
         response = self.model.completion(prompt)
-        print(f"searcher response: {response}")
+        logger.info(f"searcher response: {response}")
         time.sleep(3) ## foo foo solution
         todo_list = json.loads(self._extract_response(response))
         
-        print(todo_list)
+        logger.info(todo_list)
         k -= len(todo_list)
         for todo in todo_list:
             self.todo.append(todo)
-        print(f"self.todo in searcher: {self.todo}") 
-        #print(tasks)
+        logger.info(f"self.todo in searcher: {self.todo}") 
+        #logger.info(tasks)
         return k
 
     def _task_handler(self , task:str):
@@ -124,13 +127,13 @@ class Search_agent(Agent):
         # test with google first
         # result is an array 
 
-        print("Search URL handling ... ")
+        logger.info("Search URL handling ... ")
 
         result = await self.crawl.get_url_llm("https://google.com/search?q="+query , query)
         return result
 
     async def _page_content(self, query):
-        print("page content handling ... ")
+        logger.info("page content handling ... ")
         if not self.url_list:
             return None # no url
         urls =[]
