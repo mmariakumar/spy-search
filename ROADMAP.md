@@ -2,7 +2,7 @@
 - [x] User Interface
 - [x] pdf search
 - [x] API
-- [] Add log
+- [x] Add log
 - [] Local search
 - [x] Report generation (pdf)
 - [x] Docker
