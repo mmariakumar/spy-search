@@ -17,6 +17,7 @@ While commercial solutions like Manus charge $200 per month, Spy Search leverage
 First you have to clone the repo
 ```shell
 git clone https://github.com/JasonHonKL/spy-search.git
+cd spy-search
 ```
 
 To set up just run 
