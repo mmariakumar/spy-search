@@ -28,6 +28,7 @@ async def main(query ,api:str = None):
     planner = Planner(m)
     agents = []
     for agent in config['agents']:
+        m = Factory.get_model(config['provider'] , config['model'])
         agents.append(Factory.get_agent(agent , m))
     r  = await generate_report(query , planner , agents)
     quick_model.messages.append({"role":"assistant" , "content":r})

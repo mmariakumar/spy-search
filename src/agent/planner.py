@@ -51,7 +51,7 @@ class Planner(Agent):
 
             # send back to router ?
             task = self._todo_list.pop_task()
-            print(task)
+            print(task.task)
 
             obj = {"agent": task.agent, "task": task.task, "data": ""}
             return obj

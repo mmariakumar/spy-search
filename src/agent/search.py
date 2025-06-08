@@ -8,6 +8,8 @@ from ..browser.crawl_ai import Crawl
 from collections import deque
 import json
 
+import time 
+
 class Search_agent(Agent):
     def __init__(self, model:Model, k: int = 10):
         """
@@ -54,7 +56,7 @@ class Search_agent(Agent):
                 AGENT: PLANNER
         """
         print("SEARCHER: RUNNING ")
-        print("f{self.todo} testing..")
+        print(f"{self.todo} testing..")
         steps =self._plan(task)
         tools = {} 
         url_list = []
@@ -63,12 +65,12 @@ class Search_agent(Agent):
         cur_db = [] 
         for d in data:
             cur_db.append(d["summary_list"])
-        query = task 
+        query = task[:]
 
         while cur_task < len(self.todo):
             new_task = self.todo[cur_task]
             print(f"new task: {new_task}")
-            tool , keyword , search_engine = new_task['tool'] , new_task['keyword'] , new_task['search_engine']
+            tool , keyword , search_engine = new_task.get('tool', '') , new_task.get('keyword' , '') , new_task.get("search_engine" , "")
 
             match tool: 
                 case "url_search":
@@ -96,11 +98,17 @@ class Search_agent(Agent):
         Searcher planner
         """
         prompt = search_plan(task , self.todo , k)
-        res = self.model.completion(prompt)
-        tasks = json.loads(self._extract_response(res))
-        print(tasks)
-        k -= len(tasks)
-        for todo in tasks:
+        print(f"task {task}")
+        print(prompt)
+
+        response = self.model.completion(prompt)
+        print(f"searcher response: {response}")
+        time.sleep(3) ## foo foo solution
+        todo_list = json.loads(self._extract_response(response))
+        
+        print(todo_list)
+        k -= len(todo_list)
+        for todo in todo_list:
             self.todo.append(todo)
         print(f"self.todo in searcher: {self.todo}") 
         #print(tasks)
