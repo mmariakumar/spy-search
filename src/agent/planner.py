@@ -6,9 +6,13 @@ import json
 
 from collections import deque
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Planner(Agent):
-    def __init__(self, model: model, query: str= "", data=None):
+    def __init__(self, model: model, query: str = "", data=None):
         self.query = query
         self._model = model
         self._output_model = {}
@@ -28,7 +32,7 @@ class Planner(Agent):
     def get_send_format(self):
         pass
 
-    def set_name(self , name):
+    def set_name(self, name):
         self.name = name
 
     async def run(self, response, data=None):
@@ -38,7 +42,8 @@ class Planner(Agent):
         """
         # Initialization
         # only run for oen time
-        print("planner running...")
+
+        logger.info("planner running ... ...")
         if not self.initialize:
             prompt = planner_agent_prompt(
                 list(self._output_model.keys()),
@@ -46,12 +51,15 @@ class Planner(Agent):
                 self.query,
             )
             res = self._model.completion(prompt)
+            
+            logger.info(f"get response {res}")
+
             self._response_todo_handler(res)
+            
             self.initialize = True
 
-            # send back to router ?
             task = self._todo_list.pop_task()
-            print(task.task)
+            logger.info(f"handling {task.task}")
 
             obj = {"agent": task.agent, "task": task.task, "data": ""}
             return obj
@@ -59,13 +67,15 @@ class Planner(Agent):
             self._response_handler(response)
             new_task = self._todo_list.pop_task()
             if new_task == None:
+                logger.info("Terminate processs")
                 obj = {"agent": "TERMINATE", "task": "TERMINATE", "data": data}
             else:
                 obj = {"agent": new_task.agent, "task": new_task.task, "data": data}
+                logger.info(f"handling next obj {obj}")
             return obj
 
     def _response_handler(self, response):
-        pass 
+        pass
 
     def add_model(self, model, description):
         """
@@ -81,6 +91,7 @@ class Planner(Agent):
         add everything into the todo list queue
         """
         texts = self._extract_response(json_response)
+        logger.info(f"handling texts {texts}")
         obj = json.loads(texts)
         for response in obj:
             task = response["task"]

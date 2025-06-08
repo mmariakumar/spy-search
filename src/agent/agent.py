@@ -14,8 +14,8 @@ class Agent(ABC):
 
     def __init__(self, model):
         self.model = model
-        self.name:str
-        self.description:str
+        self.name: str
+        self.description: str
 
     """
         An agent should have a run method such that it can run it's workflow 

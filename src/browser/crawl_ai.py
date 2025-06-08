@@ -124,7 +124,7 @@ class Crawl:
                     summary.append(response)
                 except Exception as e:
                     print("Handling pdf error: ", e)
-                #current not support pdf first
+                # current not support pdf first
                 url.remove(u)
 
         self.broswer_conf = BrowserConfig()

@@ -1,9 +1,11 @@
 import os
 
+
 def create_env_file(filepath, content):
     """Creates a .env file with the given content."""
-    with open(filepath, 'w') as f:
+    with open(filepath, "w") as f:
         f.write(content)
+
 
 if __name__ == "__main__":
     file_path = ".env"
