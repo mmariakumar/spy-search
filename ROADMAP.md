@@ -14,6 +14,8 @@
 - [] Google API 
 - [] Refactor
 - [] Support multie site search (now only do google)
+- [] webhook
+- [] markdown http request 
 
 ## v0.5
 - [] fast search with other programming language
