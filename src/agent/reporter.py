@@ -114,7 +114,6 @@ class Reporter(Agent):
             source = self.get_source(data)
             print(source)
             prompt = report_task(tasks , t , source)
-            self.model.clear_message()
             res = self.model.completion(prompt)
             res = self._extract_response(res)
             print(res)

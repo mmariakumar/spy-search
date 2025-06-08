@@ -35,6 +35,56 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Save messages to localStorage whenever messages change
+  useEffect(() => {
+    const messagesToSave = messages.map(msg => ({
+      ...msg,
+      timestamp: msg.timestamp.toISOString() // Convert Date to string for storage
+    }));
+    localStorage.setItem('spy-search-messages', JSON.stringify(messagesToSave));
+  }, [messages]);
+
+  // Save loading state to localStorage
+  useEffect(() => {
+    localStorage.setItem('spy-search-loading', JSON.stringify(isLoading));
+  }, [isLoading]);
+
+  // Load messages and loading state from localStorage on component mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('spy-search-messages');
+    const savedLoading = localStorage.getItem('spy-search-loading');
+    
+    if (savedMessages && messages.length === 0) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        const messagesWithDates = parsedMessages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp) // Convert string back to Date
+        }));
+        setMessages(messagesWithDates);
+      } catch (error) {
+        console.error('Failed to load messages from localStorage:', error);
+      }
+    }
+
+    if (savedLoading) {
+      try {
+        const parsedLoading = JSON.parse(savedLoading);
+        setIsLoading(parsedLoading);
+      } catch (error) {
+        console.error('Failed to load loading state from localStorage:', error);
+      }
+    }
+  }, [setMessages, setIsLoading, messages.length]);
+
+  // Clear localStorage when user explicitly clears chat
+  const clearChat = () => {
+    setMessages([]);
+    localStorage.removeItem('spy-search-messages');
+    localStorage.removeItem('spy-search-loading');
+    setIsLoading(false);
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -297,11 +347,33 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
                   <div>
                     <h3 className="text-lg font-medium text-foreground">Welcome to Spy Search</h3>
                     <p className="text-muted-foreground">Start a conversation to generate intelligence reports</p>
+                    {localStorage.getItem('spy-search-messages') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearChat}
+                        className="mt-2"
+                      >
+                        Clear Chat History
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
             ) : (
               <div className="space-y-6">
+                {/* Clear chat button when messages exist */}
+                <div className="flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearChat}
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Clear Chat
+                  </Button>
+                </div>
+                
                 {messages.map((message) => (
                   <div
                     key={message.id}
