@@ -67,7 +67,7 @@ Join us in building the future of fast, affordable search!
 - [x] API
 - [] Add log feature
 - [] Local search
-- [] Report generation (pdf)
+- [x] Report generation (pdf)
 - [] Docker
 - [] Email API & Notion API & Obsidian API
 
