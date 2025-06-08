@@ -20,10 +20,10 @@ class Ollama(Model):
         self._append_message(message=message, role="user")
         msg_cache = ""
         if stream == False:
-            res = chat(model=self.model, messages=self.message, stream=False)
+            res = chat(model=self.model, messages=self.messages, stream=False)
             self._append_message(role="assistant", message=res["message"]["content"])
         else:
-            res = chat(model=self.model, messages=self.message, stream=True)
+            res = chat(model=self.model, messages=self.messages, stream=True)
             for chunk in res:
                 msg_cache += chunk["message"]["content"]
                 print(chunk["message"]["content"], end="", flush=True)

@@ -11,7 +11,7 @@ class Factory():
             return Planner(model)
         elif agent_name == "reporter":
             return Reporter(model)
-        elif agent_name == "seracher":
+        elif agent_name == "searcher":
             return Search_agent(model)
     
     def get_model(provider:str , model:str) -> Model:

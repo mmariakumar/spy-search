@@ -14,6 +14,7 @@ async def generate_report(query , planner:Planner , agents:list[Agent]):
     server.add_router(planner.name , planner_router)
 
     for agent in agents:
+        print(agent)
         r = Router(server , agent)
         server.add_router(agent.name , r)
         planner.add_model(agent.name , agent.description)

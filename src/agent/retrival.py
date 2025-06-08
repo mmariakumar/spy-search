@@ -15,18 +15,24 @@ class RAG_agent(Agent):
         path: db path , default "./db"
     """
 
-    def __init__(self, model, path: str = "./db"):
+    """
+        TODO: dynamic file list ? 
+    """
+    def __init__(self, model, path: str = "./db" , filelist = "./tmp"):
         self.model = model
         self.db = VectorSearch(path=path)
         self.tool_list = ["add_document", "query", "reset"]
+        
+        self.filelist = filelist
 
-    def run(self, task: str) -> str:
-        self.task = task
-        self.prompt = retrival_agent_prompt(self.tool_list, task=task)
-        res = self.model.completion(self.prompt)
-        json_res = self._extract_response(res)
-        self._json_handler(json_res)
-        return ""
+    def run(self, task: str , data:str) -> str:
+        """
+            give a promp with:
+                task , list of file , list of data in the vector search
+                based on the tasks generate what to do next 
+            handle every task 
+        """
+        return {"agent": "planner" , "data" : "" , "task": ""}
 
     def _json_handler(self, res: str):
         """
