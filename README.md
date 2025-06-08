@@ -45,9 +45,6 @@ docker run -p 8000:8000 -p 8080:8080 spy-searcher
 Now you can access  
 [http://localhost:8000](http://localhost:8000)
 
-## Example Report
-[Example](./report.md)
-
 
 ## Community 
 [Discord](https://discord.gg/rrsMgBdJJt)
@@ -65,7 +62,7 @@ Join us in building the future of fast, affordable search!
 - [] Add log
 - [] Local search
 - [x] Report generation (pdf)
-- [] Docker
+- [x] Docker
 - [] Email API & Notion API & Obsidian API
 
 
