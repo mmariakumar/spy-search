@@ -3,7 +3,7 @@
 - [x] pdf search
 - [x] API
 - [x] Add log
-- [] Local search
+- [x] Local search
 - [x] Report generation (pdf)
 - [x] Docker
 

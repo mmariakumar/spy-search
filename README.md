@@ -8,6 +8,7 @@ Currently our searching-speed is quite slow yet we can generate a long length co
 ---
 
 ## Roadmap
+**News**: Spy-searcher has just released v0.3 ! 
 
 - **Version 1.0:** Agentic Search Functionality  
 - **Version 2.0:** Localized Cache to Accelerate Search Speed  
