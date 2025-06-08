@@ -7,8 +7,17 @@ import { ChatInterface } from "@/components/ChatInterface";
 import { AgentConfig } from "@/components/AgentConfig";
 import { useToast } from "@/hooks/use-toast";
 
+interface Message {
+  id: string;
+  type: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 const Index = () => {
   const [agents, setAgents] = useState<string[]>(["planner", "reporter"]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleAgentConfigSave = async (selectedAgents: string[]) => {
@@ -78,7 +87,13 @@ const Index = () => {
             </TabsList>
 
             <TabsContent value="chat" className="space-y-8">
-              <ChatInterface agents={agents} />
+              <ChatInterface 
+                agents={agents} 
+                messages={messages}
+                setMessages={setMessages}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+              />
             </TabsContent>
 
             <TabsContent value="settings" className="space-y-8">

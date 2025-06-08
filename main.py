@@ -1,8 +1,6 @@
 from src import Planner
-from src.agent.search import Search_agent
-from src.model.deepseek import Deepseek
-from src.agent.reporter import Reporter
 from src.factory import Factory
+from src.model import Model
 
 from src.main import generate_report , read_config
 
@@ -10,9 +8,19 @@ from api.server import AgentsRequest
 import json 
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File , Form
+
+from pydantic import BaseModel
+from typing import List , Optional
 
 STEP = 10
+
+class Message(BaseModel):
+    role: str
+    content: str
+
+config = read_config()
+quick_model:Model = Factory.get_model(config['provider'] , config['model']) 
 
 async def main(query ,api:str = None):
     config = read_config()
@@ -22,7 +30,14 @@ async def main(query ,api:str = None):
     for agent in config['agents']:
         agents.append(Factory.get_agent(agent , m))
     r  = await generate_report(query , planner , agents)
+    quick_model.messages.append({"role":"assistant" , "content":r})
     return r
+
+async def quick_response_logic(query: str, messages: List[Message], files: Optional[List[UploadFile]] = None, api: Optional[str] = None):
+    # Example: call your model's completion method
+    res = quick_model.completion(query)
+    # You can also process messages or files here if needed
+    return res
 
 app = FastAPI()
 
@@ -42,10 +57,63 @@ app.add_middleware(
 )
 
 
-@app.get("/report/{query}")
-async def report(query):
-    r = await main(query)
-    return {"report":r}
+
+@app.post("/report/{query}")
+async def report(
+    query: str,
+    messages: str = Form(...),  # JSON string of messages in form-data
+    files: Optional[List[UploadFile]] = File(None)
+):
+    # Parse the messages JSON string to Python list
+    try:
+        messages_list = json.loads(messages)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in messages field"}
+
+    # Validate each message dict using Pydantic (optional but recommended)
+    validated_messages = [Message(**msg) for msg in messages_list]
+
+    file_details = []
+    if files:
+        for file in files:
+            content = await file.read()
+            file_details.append({"filename": file.filename, "size": len(content)})
+
+    r = await main(query, validated_messages)
+    return {
+        "report": r,
+        "files_received": file_details,
+        "messages_received": [msg.model_dump() for msg in validated_messages]
+    }
+
+
+@app.post("/quick/{query}")
+async def quick_response_endpoint(
+    query: str,
+    messages: str = Form(...),
+    files: Optional[List[UploadFile]] = File(None),
+    api: Optional[str] = Form(None)
+):
+    try:
+        messages_list = json.loads(messages)
+    except json.JSONDecodeError:
+        return {"error": "Invalid JSON in messages field"}
+
+    validated_messages = [Message(**msg) for msg in messages_list]
+
+    res = await quick_response_logic(query, validated_messages, files, api)
+
+    file_details = []
+    if files:
+        for file in files:
+            content = await file.read()
+            file_details.append({"filename": file.filename, "size": len(content)})
+
+    return {
+        "report": res,
+        "files_received": file_details,
+        "messages_received": [msg.dict() for msg in validated_messages]
+    }
 
 
 @app.post("/agents_selection")

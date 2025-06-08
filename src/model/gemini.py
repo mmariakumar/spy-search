@@ -16,7 +16,7 @@ class Gemini(Model):
         self.api_key = os.getenv("GEMINI_API")
         self.model = model
         self.client = genai.Client(api_key=self.api_key)
-        self.message = self.client.chats.create(model=model)
+        self.messages = self.client.chats.create(model=model)
 
     def set_api(self , api):
         self.api = api
