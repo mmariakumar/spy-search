@@ -3,7 +3,7 @@
 """
 from ..agent import Planner , Search_agent , Reporter
 
-from ..model import Gemini , Ollama , Deepseek, Model
+from ..model import Gemini , Ollama , Deepseek, Model , Gork , OpenAI
 
 class Factory():
     def get_agent(agent_name:str , model:Model):
@@ -21,5 +21,9 @@ class Factory():
             return Gemini(model)
         if provider == "ollama" or provider =="ollama":
             return Ollama(model)
+        if provider == "xAI" or provider == "gork":
+            return Gork(model)
+        if provider == "openai" or provider == "gpt":
+            return OpenAI(model)
         
         return None 

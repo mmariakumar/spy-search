@@ -7,6 +7,8 @@ class Model(ABC):
     """
     This is an abstraction class for models
     Model can be any LLM or VLM
+
+    TODO: should we have one api that support 
     """
 
     @abstractmethod
