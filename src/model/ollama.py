@@ -8,7 +8,7 @@ from crawl4ai import LLMConfig
 class Ollama(Model):
     def __init__(self, model: str):
         self.model = model
-        self.message = []
+        self.messages = []
 
     def set_api(self, api):
         """
@@ -43,4 +43,4 @@ class Ollama(Model):
         return LLMConfig(provider="ollama/" + self.model, api_token=None)
 
     def _append_message(self, role: str, message: str):
-        self.message.append({"role": role, "content": message})
+        self.messages.append({"role": role, "content": message})

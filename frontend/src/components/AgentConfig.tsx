@@ -15,18 +15,17 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
   const [selectedAgents, setSelectedAgents] = useState<string[]>(agents);
 
   const availableAgents = [
-    { id: "planner", label: "Planner", required: true, disabled: false },
     { id: "searcher", label: "Searcher", required: false, disabled: false },
-    { id: "local-retrieval", label: "Local Retrieval Searcher", required: false, disabled: false },
+    { id: "local-retrieval", label: "Local Retrieval Searcher", required: false, disabled: true },
     { id: "executor", label: "Executor", required: false, disabled: true },
     { id: "reporter", label: "Reporter", required: false, disabled: false, group: "output" },
-    { id: "summary", label: "Summary", required: false, disabled: false, group: "output" },
+    { id: "summary", label: "Summary", required: false, disabled: true, group: "output" },
     { id: "email", label: "Email", required: false, disabled: true },
     { id: "notion", label: "Notion", required: false, disabled: true },
     { id: "google-drive", label: "Google Drive", required: false, disabled: true }
   ];
 
-  // Ensure planner is always included
+  // Ensure planner is always included but not shown
   useEffect(() => {
     if (!selectedAgents.includes("planner")) {
       setSelectedAgents(prev => [...prev, "planner"]);
@@ -34,8 +33,6 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
   }, [selectedAgents]);
 
   const handleAgentChange = (agentId: string, checked: boolean) => {
-    if (agentId === "planner") return; // Planner cannot be unchecked
-    
     const agent = availableAgents.find(a => a.id === agentId);
     if (agent?.disabled) return; // Disabled agents cannot be toggled
     
@@ -47,12 +44,11 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
   };
 
   const handleSave = () => {
-    // Validate that either reporter or summary is selected
+    // Validate that reporter is selected since summary is disabled
     const hasReporter = selectedAgents.includes("reporter");
-    const hasSummary = selectedAgents.includes("summary");
     
-    if (!hasReporter && !hasSummary) {
-      // Auto-select reporter if neither is selected
+    if (!hasReporter) {
+      // Auto-select reporter if not selected
       const finalAgents = [...selectedAgents, "reporter"];
       setSelectedAgents(finalAgents);
       onAgentConfigSave(finalAgents);
@@ -63,7 +59,7 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
     onAgentConfigSave(finalAgents);
   };
 
-  const isOutputGroupSelected = selectedAgents.includes("reporter") || selectedAgents.includes("summary");
+  const isReporterSelected = selectedAgents.includes("reporter");
 
   return (
     <div className="space-y-8">
@@ -83,34 +79,29 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
                 id={agent.id}
                 checked={selectedAgents.includes(agent.id)}
                 onCheckedChange={(checked) => handleAgentChange(agent.id, checked as boolean)}
-                disabled={agent.required || agent.disabled}
+                disabled={agent.disabled}
                 className="border-primary/50"
               />
               <Label 
                 htmlFor={agent.id} 
                 className={`text-foreground font-medium cursor-pointer ${
-                  agent.required ? 'text-primary' : ''
-                } ${
                   agent.disabled ? 'text-muted-foreground opacity-60' : ''
                 }`}
               >
                 {agent.label}
-                {agent.required && (
-                  <span className="text-xs text-primary ml-2">(Required)</span>
-                )}
                 {agent.disabled && (
                   <span className="text-xs text-muted-foreground ml-2">(Disabled)</span>
                 )}
-                {agent.group === "output" && (
-                  <span className="text-xs text-orange-500 ml-2">(One required)</span>
+                {agent.id === "reporter" && (
+                  <span className="text-xs text-orange-500 ml-2">(Required)</span>
                 )}
               </Label>
             </div>
           ))}
           
-          {!isOutputGroupSelected && (
+          {!isReporterSelected && (
             <div className="text-sm text-orange-500 mt-2 p-2 bg-orange-500/10 rounded">
-              Note: Either Reporter or Summary must be selected. Reporter will be auto-selected if neither is chosen.
+              Note: Reporter is required and will be auto-selected if not chosen.
             </div>
           )}
         </CardContent>
