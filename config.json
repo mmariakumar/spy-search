@@ -2,6 +2,7 @@
     "provider": "deepseek",
     "model": "deepseek-chat",
     "agents": [
-        "reporter"
+        "reporter",
+        "searcher"
     ]
 }

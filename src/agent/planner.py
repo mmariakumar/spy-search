@@ -91,7 +91,7 @@ class Planner(Agent):
         add everything into the todo list queue
         """
         texts = self._extract_response(json_response)
-        logger.ingo(f"handling texts {texts}")
+        logger.info(f"handling texts {texts}")
         obj = json.loads(texts)
         for response in obj:
             task = response["task"]
