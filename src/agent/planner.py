@@ -35,7 +35,7 @@ class Planner(Agent):
     def set_name(self, name):
         self.name = name
 
-    async def run(self, response, data=None):
+    async def run(self, response, data=[]):
         """
         It should generate a to do list
         and then pass to different agent
@@ -61,7 +61,7 @@ class Planner(Agent):
             task = self._todo_list.pop_task()
             logger.info(f"handling {task.task}")
 
-            obj = {"agent": task.agent, "task": task.task, "data": ""}
+            obj = {"agent": task.agent, "task": task.task, "data": data}
             return obj
         else:
             self._response_handler(response)

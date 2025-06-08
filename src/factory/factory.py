@@ -2,7 +2,7 @@
 Factory
 """
 
-from ..agent import Planner, Search_agent, Reporter
+from ..agent import Planner, Search_agent, Reporter, RAG_agent
 
 from ..model import Gemini, Ollama, Deepseek, Model, Gork, OpenAI
 
@@ -15,6 +15,8 @@ class Factory:
             return Reporter(model)
         elif agent_name == "searcher":
             return Search_agent(model)
+        elif agent_name == "local-retrieval":
+            return RAG_agent(model)
 
     def get_model(provider: str, model: str) -> Model:
         if provider == "deepseek":

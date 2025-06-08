@@ -6,9 +6,12 @@ from ..prompt import retrieval_prompt
 from markitdown import MarkItDown
 
 import os
-import secrets
 import string 
 import json 
+
+import logging 
+
+logger = logging.getLogger(__name__)
 
 class RAG_agent(Agent):
     """
@@ -23,14 +26,16 @@ class RAG_agent(Agent):
         TODO: dynamic file list ? 
     """
 
-    def __init__(self, model:Model, path: str = "./db", filelist="./tmp"):
+    def __init__(self, model:Model, path: str = "./db", filelist="./local_files"):
         self.model = model
         self.db = VectorSearch(path=path)
         self.tool_list = ["add_document", "query", "reset"]
 
         self.filelist = filelist
+        self.name = "local-retrieval"
+        self.description = "read local files and get summary"
 
-    def run(self, task: str, data: str) -> str:
+    async def run(self, task: str, data: str) -> str:
         """
             one way work flow 
             -- given a filelist 
@@ -38,19 +43,23 @@ class RAG_agent(Agent):
             -- do query 
             use model to form {} format
         """
+        logger.info("retrival running ...")
         mk = MarkItDown()
         for root, dirs, files in os.walk(self.filelist):
             for file in files:
-                self._file_handler(os.join(root , file) , mk)
+                logger.info(f"handling the file{file}")
+                self._file_handler(os.path.join(root , file) , mk)
 
-        result = self.db.query(task , 3)
-        for i , docs in enumerate(result["documents"]):
-            alphabet = string.ascii_letters + string.digit
-            rand_id = "".join(secrets.choice(alphabet) for _ in range(self.length))
-            prompt = retrieval_prompt(docs, result['metadatas']['file'][i]) 
+        result = self.db.query(task , 2)
+        logger.info(f"get the result {result}")
+        for i, docs in enumerate(result["documents"]):
+            file_path = result["metadatas"][0][i]['file']  # fix: index correctly
+            prompt = retrieval_prompt(docs, file_path)
             res = self.model.completion(prompt)
             res = self._extract_response(res)
+            logger.info(f"getting response {res}")
             res = json.loads(res)
+            logger.info(f"loading ... {res} ")
             data.append(res)
             
         return {"agent": "planner", "data":data , "task": ""}
@@ -74,16 +83,12 @@ class RAG_agent(Agent):
         pass 
 
     def _file_handler(self, filepath , mk:MarkItDown):
-        alphabet = string.ascii_letters + string.digit
         result = mk.convert(filepath)
         result = result.markdown
         temp = "" 
         for i , ch in enumerate(result):
             temp += ch
             if i % 1500 == 0 and i != 0:
-
-                rand_id = "".join(secrets.choice(alphabet) for _ in range(self.length))
-                self.db.add_document(temp, {"id" :rand_id , "file":filepath })
-                
-        rand_id = "".join(secrets.choice(alphabet) for _ in range(self.length))
-        self.db.add_document(temp, {"id":rand_id , "file":filepath}) 
+                self.db.add_document(temp, str(i) , {"file":filepath})
+            
+        self.db.add_document(temp,  str(len(result)+1) , {"file":filepath}) 
