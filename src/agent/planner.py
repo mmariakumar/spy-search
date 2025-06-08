@@ -6,9 +6,13 @@ import json
 
 from collections import deque
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Planner(Agent):
-    def __init__(self, model: model, query: str= "", data=None):
+    def __init__(self, model: model, query: str = "", data=None):
         self.query = query
         self._model = model
         self._output_model = {}
@@ -28,7 +32,7 @@ class Planner(Agent):
     def get_send_format(self):
         pass
 
-    def set_name(self , name):
+    def set_name(self, name):
         self.name = name
 
     async def run(self, response, data=None):
@@ -38,7 +42,7 @@ class Planner(Agent):
         """
         # Initialization
         # only run for oen time
-        print("planner running...")
+
         if not self.initialize:
             prompt = planner_agent_prompt(
                 list(self._output_model.keys()),
@@ -65,7 +69,7 @@ class Planner(Agent):
             return obj
 
     def _response_handler(self, response):
-        pass 
+        pass
 
     def add_model(self, model, description):
         """

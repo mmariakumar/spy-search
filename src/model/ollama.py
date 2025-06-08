@@ -12,9 +12,9 @@ class Ollama(Model):
 
     def set_api(self, api):
         """
-            no need to do anything
+        no need to do anything
         """
-        return 
+        return
 
     def completion(self, message: str, stream: str = False):
         self._append_message(message=message, role="user")
@@ -47,5 +47,3 @@ class Ollama(Model):
 
     def _append_message(self, role: str, message: str):
         self.messages.append({"role": role, "content": message})
-
-    

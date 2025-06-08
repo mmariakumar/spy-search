@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class Server:
     """
     workflow:
@@ -37,9 +42,11 @@ class Server:
         start the workflow
         """
         self.next_router = self.routers[self.initial_router]
+        logger.info("server start ... ")
 
         while True:
             query = await self.next_router.recv_response(query, self.data)
+            logger.info(f"handling new task {self.next_router} , {query}")
             if self.check_response(query):
                 return query
 

@@ -18,21 +18,22 @@ class RAG_agent(Agent):
     """
         TODO: dynamic file list ? 
     """
-    def __init__(self, model, path: str = "./db" , filelist = "./tmp"):
+
+    def __init__(self, model, path: str = "./db", filelist="./tmp"):
         self.model = model
         self.db = VectorSearch(path=path)
         self.tool_list = ["add_document", "query", "reset"]
-        
+
         self.filelist = filelist
 
-    def run(self, task: str , data:str) -> str:
+    def run(self, task: str, data: str) -> str:
         """
-            give a promp with:
-                task , list of file , list of data in the vector search
-                based on the tasks generate what to do next 
-            handle every task 
+        give a promp with:
+            task , list of file , list of data in the vector search
+            based on the tasks generate what to do next
+        handle every task
         """
-        return {"agent": "planner" , "data" : "" , "task": ""}
+        return {"agent": "planner", "data": "", "task": ""}
 
     def _json_handler(self, res: str):
         """
