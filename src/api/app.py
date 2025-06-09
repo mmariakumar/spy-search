@@ -27,12 +27,12 @@ async def get_config():
 
 
 @router.get("/select_folder")
-async def select_folder(folder_name: FolderCreateRequest):
+async def select_folder(folder_name: str):
     """
     Change the column db to ./local_files/{the folder here} 
     Return success true
     """
-    folder_path = f"./local_files/{folder_name.filepath}"
+    folder_path = f"./local_files/{folder_name}"
 
     config = read_config()
     config['db'] = folder_path
@@ -46,14 +46,14 @@ async def select_folder(folder_name: FolderCreateRequest):
     if not os.path.isdir(folder_path):
         raise HTTPException(status_code=400, detail="Path is not a directory")
         
-    return {"success": True, "selected_folder": folder_name.filepath}
+    return {"success": True, "selected_folder": folder_name}
 
 @router.post("/delete_folder")
-async def delete_folder(filepath: FolderCreateRequest):
+async def delete_folder(filepath: str):
     """
     Delete specific folder
     """
-    full_path = f"./local_files/{filepath.filepath}"
+    full_path = f"./local_files/{filepath}"
     
     if not os.path.exists(full_path):
         raise HTTPException(status_code=404, detail="Folder not found")
