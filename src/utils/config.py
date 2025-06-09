@@ -10,5 +10,6 @@ def read_config():
     return config
 
 
-def write_config(agents:list[str] = None):
-    pass 
+def write_config(config):
+    with open("./config.json", "w") as file:
+        json.dump(config , file , indent=4)

@@ -1,19 +1,21 @@
-from fastapi import APIRouter ,UploadFile, File, Form
+from fastapi import APIRouter ,UploadFile, File, Form , HTTPException
+from fastapi.responses import FileResponse
 import json
 import os 
 import logging
+import shutil
 
 logger = logging.getLogger(__name__)
 
-from ..utils import read_config 
-from .models.models import AgentsRequest , Message
+from ..utils import read_config , write_config
+from .models.models import AgentsRequest , Message, FolderContent , FolderListResponse , FolderCreateRequest
 from ..main import generate_report
 
 from ..agent import Planner
 from ..factory import Factory
 from ..model import Model
 
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 router = APIRouter()
 
@@ -25,30 +27,180 @@ async def get_config():
 
 
 @router.get("/select_folder")
-async def select_folder():
-    pass 
+async def select_folder(folder_name: FolderCreateRequest):
+    """
+    Change the column db to ./local_files/{the folder here} 
+    Return success true
+    """
+    folder_path = f"./local_files/{folder_name.filepath}"
+
+    config = read_config()
+    config['db'] = folder_path
+
+    write_config(config)
+
+    logger.info(f"{folder_path}") 
+    if not os.path.exists(folder_path):
+        raise HTTPException(status_code=404, detail="Folder not found")
+    
+    if not os.path.isdir(folder_path):
+        raise HTTPException(status_code=400, detail="Path is not a directory")
+        
+    return {"success": True, "selected_folder": folder_name.filepath}
 
 @router.post("/delete_folder")
-async def delete_folder():
-    pass 
+async def delete_folder(filepath: FolderCreateRequest):
+    """
+    Delete specific folder
+    """
+    full_path = f"./local_files/{filepath.filepath}"
+    
+    if not os.path.exists(full_path):
+        raise HTTPException(status_code=404, detail="Folder not found")
+        
+    try:
+        shutil.rmtree(full_path)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 @router.post("/create_folder")
-async def create_folder(file_path:str):
+async def create_folder(filepath: FolderCreateRequest):
     try:
-        os.mkdir("./local_files/"+file_path)
-        return {"success":True}
-    except:
-        return {"success":False}
-    
+        os.makedirs("./local_files/" + filepath.filepath, exist_ok=True)
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
-@router.get("/folder_list")
+@router.get("/folder_list", response_model=FolderListResponse)
 async def get_folder():
     """
-        Get the folder list in local_files
+    Get the folder list in local_files
+    Return {
+        files: [
+            {"foldername": "folder1", "contents": ["file1", "file2"]},
+            {"foldername": "folder2", "contents": ["file3", "file4"]}
+        ]
+    }
     """
-    directories = os.listdir("./local_files")
-    return {"directories": directories}
+    base_path = "./local_files"
+    
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
+        
+    folder_list = []
+    
+    try:
+        for item in os.listdir(base_path):
+            full_path = os.path.join(base_path, item)
+            if os.path.isdir(full_path):
+                # Get list of contents in the folder
+                contents = os.listdir(full_path)
+                folder_list.append(FolderContent(
+                    foldername=item,
+                    contents=contents
+                ))
+                
+        return FolderListResponse(files=folder_list)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 
+@router.post("/upload_file")
+async def upload_file(
+    file: UploadFile = File(...),
+    filepath: str = Form(...),
+):
+    """
+    Upload a file to a specific filepath in local_files directory
+    """
+    try:
+        # Construct the full path
+        full_path = os.path.join("./local_files", filepath)
+        
+        # Check if the directory exists
+        dir_path = os.path.dirname(full_path)
+        if not os.path.exists(dir_path):
+            raise HTTPException(status_code=404, detail="Directory not found")
+            
+        # Save the file
+        with open(full_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+            
+        return {
+            "success": True,
+            "filename": file.filename,
+            "filepath": filepath
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@router.post("/delete_file")
+async def delete_file(filepath: str):
+    """
+    Delete a specific file from local_files directory
+    """
+    try:
+        # Construct the full path
+        full_path = os.path.join("./local_files", filepath)
+        
+        # Check if file exists
+        if not os.path.exists(full_path):
+            raise HTTPException(status_code=404, detail="File not found")
+            
+        # Check if it's actually a file
+        if not os.path.isfile(full_path):
+            raise HTTPException(status_code=400, detail="Path is not a file")
+            
+        # Delete the file
+        os.remove(full_path)
+        
+        return {
+            "success": True,
+            "deleted_file": filepath
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@router.get("/download_file/{filepath:path}")
+async def download_file(filepath: str):
+    """
+    Download a file from local_files directory
+    filepath: path to the file relative to local_files directory
+    """
+    try:
+        # Construct the full path
+        full_path = os.path.join("./local_files", filepath)
+        
+        # Check if file exists
+        if not os.path.exists(full_path):
+            raise HTTPException(status_code=404, detail="File not found")
+            
+        # Check if it's actually a file
+        if not os.path.isfile(full_path):
+            raise HTTPException(status_code=400, detail="Path is not a file")
+            
+        # Get the filename from the path
+        filename = os.path.basename(filepath)
+        
+        # Return the file as a download
+        return FileResponse(
+            path=full_path,
+            filename=filename,
+            media_type='application/octet-stream'
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/messags_record")
 async def get_messages_record():

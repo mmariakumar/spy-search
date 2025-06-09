@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Settings2, Brain, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DatabaseModal } from "@/components/DatabaseModal";
 
 interface AgentConfigProps {
   agents: string[];
@@ -22,6 +22,7 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
   const [provider, setProvider] = useState<string>("");
   const [model, setModel] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [showDatabaseModal, setShowDatabaseModal] = useState(false);
   const { toast } = useToast();
 
   const availableAgents = [
@@ -37,15 +38,15 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
 
   const providers = [
     { value: "openai", label: "OpenAI" },
-    { value: "anthropic", label: "Anthropic" },
+    { value: "grok", label: "Grok" },
     { value: "deepseek", label: "DeepSeek" },
     { value: "ollama", label: "Ollama" }
   ];
 
   const modelOptions: Record<string, string[]> = {
     openai: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
-    anthropic: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
-    deepseek: ["deepseek-chat", "deepseek-coder"],
+    grok: ["grok-beta", "grok-2-1212", "grok-2-vision-1212"],
+    deepseek: ["deepseek-chat", "deepseek-reasoner"],
     ollama: ["llama2", "codellama", "mistral", "neural-chat"]
   };
 
@@ -199,16 +200,16 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
             <Database className="h-5 w-5 text-primary" />
             Database/Folder Selection
           </CardTitle>
-          <CardDescription>Select which database or folder to use for local retrieval</CardDescription>
+          <CardDescription>Manage and select database folders for local retrieval</CardDescription>
         </CardHeader>
         <CardContent>
           <Button
-            onClick={handleDatabaseSelection}
+            onClick={() => setShowDatabaseModal(true)}
             variant="outline"
             className="w-full"
           >
             <Database className="mr-2 h-4 w-4" />
-            Select Database/Folder (Coming Soon)
+            Manage Database/Folders
           </Button>
         </CardContent>
       </Card>
@@ -266,6 +267,11 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
         <Settings2 className="mr-3 h-5 w-5" />
         Save Agent Configuration
       </Button>
+
+      <DatabaseModal 
+        open={showDatabaseModal} 
+        onOpenChange={setShowDatabaseModal} 
+      />
     </div>
   );
 };
