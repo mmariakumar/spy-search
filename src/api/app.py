@@ -1,5 +1,6 @@
 from fastapi import APIRouter ,UploadFile, File, Form
 import json
+import os 
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,11 +33,28 @@ async def delete_folder():
     pass 
 
 @router.post("/create_folder")
-async def create_folder():
-    pass 
+async def create_folder(file_path:str):
+    try:
+        os.mkdir("./local_files/"+file_path)
+        return {"success":True}
+    except:
+        return {"success":False}
+    
 
 @router.get("/folder_list")
 async def get_folder():
+    """
+        Get the folder list in local_files
+    """
+    directories = os.listdir("./local_files")
+    return {"directories": directories}
+
+
+@router.get("/messags_record")
+async def get_messages_record():
+    """
+        Read the message from the db ?  
+    """
     pass
 
 @router.post("/agents_selection")
@@ -56,7 +74,6 @@ async def select_agent(body: AgentsRequest):
     with open("./config.json", "w") as f:
         json.dump(config, f, indent=4)
     return {"success": True, "agents_received": body.agents , "model_received":body.model , "provider_received":body.provider}
-
 
 
 @router.post("/quick/{query}")

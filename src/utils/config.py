@@ -8,3 +8,7 @@ def read_config():
         content = file.read()
         config = json.loads(content)
     return config
+
+
+def write_config(agents:list[str] = None):
+    pass 
