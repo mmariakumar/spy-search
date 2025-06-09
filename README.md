@@ -27,6 +27,8 @@ To set up just run
 python setup.py
 ```
 
+Add your API key in the .env file if you want to use API. Currently we support openAI, Claude, Gork & Deepseek. If you use ollama you don't need to do anything. 
+
 config the config.json file, you may copy the following template
 ```json
 {
