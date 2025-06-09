@@ -29,6 +29,8 @@ class RAG_agent(Agent):
     def __init__(self, model:Model, path: str = "./db", filelist="./local_files"):
         self.model = model
         self.db = VectorSearch(path=path)
+        # TODO: maybe don't use hard reset ? 
+        self.db.reset()
         self.tool_list = ["add_document", "query", "reset"]
 
         self.filelist = filelist
@@ -53,6 +55,10 @@ class RAG_agent(Agent):
         result = self.db.query(task , 2)
         logger.info(f"get the result {result}")
         for i, docs in enumerate(result["documents"]):
+
+            """
+                TODO: refactor use localRAG class 
+            """
             file_path = result["metadatas"][0][i]['file']  # fix: index correctly
             prompt = retrieval_prompt(docs, file_path)
             res = self.model.completion(prompt)

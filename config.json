@@ -3,6 +3,8 @@
     "model": "deepseek-chat",
     "agents": [
         "reporter",
-        "local-retrieval"
-    ]
+        "local-retrieval",
+        "searcher"
+    ],
+    "db": "./local_files"
 }
