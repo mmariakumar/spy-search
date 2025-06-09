@@ -22,7 +22,7 @@ class RAG_agent(Agent):
         model: a LLM model
         path: db path , default "./db"
     """
-    def __init__(self, model:Model, path: str = "./db", filelist="./local_files"):
+    def __init__(self, model:Model, path: str = "./local_db", filelist="./local_files"):
         self.model = model
         self.db = VectorSearch(path=path)
         # TODO: maybe don't use hard reset ? 
