@@ -44,7 +44,7 @@ class Reporter(Agent):
 
         # problem it is not yet response and then it return and the problem is it can't extract correct res afterward
         tasks = self._extract_response(res)
-        tasks = json.loads(tasks)
+       # tasks = json.loads(tasks)
 
         logger.info(f"handling tasks {tasks}") 
 
@@ -121,18 +121,7 @@ class Reporter(Agent):
             res = self._extract_response(res)
 
             logger.info(f"getting response {res}")
-
-            red_flag = False
-            try:
-                res = json.loads(res)
-            except:
-                red_flag = True
-                res = {"short_summary": "<ERROR>", "content": "<ERROR>"}
-            if not red_flag:
-                tasks[i]["content"] = res["short_summary"]
-                final_report += res["content"]
-                final_report += "\n"
-            i += 1
+            
         return final_report
 
     def _get_relevant_data(self):

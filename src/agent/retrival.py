@@ -61,10 +61,11 @@ class RAG_agent(Agent):
             file_path = result["metadatas"][0][i]['file']  # fix: index correctly
             prompt = retrieval_prompt(docs, file_path)
             res = self.model.completion(prompt)
+            logger.info(f"response from llm: {res}")
             res = self._extract_response(res)
             logger.info(f"getting response {res}")
-            res = json.loads(res)
-            logger.info(f"loading ... {res} ")
+            #res = json.loads(res)
+            #logger.info(f"loading ... {res} ")
             data.append(res)
             
         return {"agent": "planner", "data":data , "task": ""}
