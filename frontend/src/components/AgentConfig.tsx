@@ -47,7 +47,7 @@ export const AgentConfig = ({ agents, onAgentConfigSave }: AgentConfigProps) => 
     openai: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
     grok: ["grok-beta", "grok-2-1212", "grok-2-vision-1212"],
     deepseek: ["deepseek-chat", "deepseek-reasoner"],
-    ollama: ["deepseek-r1:7b", "gemma3", "qwen3:8b", "qwen2.5vl:3b"]
+    ollama: ["llama2", "codellama", "mistral", "neural-chat"]
   };
 
   // Fetch current config from backend
