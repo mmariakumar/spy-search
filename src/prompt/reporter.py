@@ -74,6 +74,7 @@ def report_task(tasks, task, source):
         - The content should be approximately 400-500 words.
         - Please ensure accuracy and clarity in your report.
         - Ensure the content is coherent.
+        - Use markdown to response
 
         Respond in the following JSON format:
 

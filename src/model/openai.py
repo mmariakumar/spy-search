@@ -41,8 +41,7 @@ class OpenAI(Model):
                 model=self.model, messages=self.messages, stream=False
             )
         return response.choices[0].message.content
-         
-
+    
     def add_system_instructuion(self, instruction: str):
         pass
 
