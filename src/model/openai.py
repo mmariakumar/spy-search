@@ -11,7 +11,7 @@ import os
 
 class OpenAI(Model):
     def __init__(self, model: str = "", api_key: str = ""):
-        load_dotenv()
+        load_dotenv(override=True)
         self.api_key = os.getenv("OPENAI_API_KEY")
 
         config = read_config()

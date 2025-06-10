@@ -283,6 +283,9 @@ class Crawl:
         pass
 
     def _download_pdf(self, url, save_path="./tmp"):
+        """
+            Download every file ? 
+        """
         filename = url.rstrip("/").split("/")[-1]
         filename = filename.split("?")[0]
         # Ensure the filename ends with .pdf

@@ -36,7 +36,6 @@ class Agent(ABC):
     def get_send_format(self) -> BaseModel:
         pass
 
-
     def _extract_response(self, res: str):
         """
         Extract JSON or Python literal from a string that may contain markdown code blocks or plain text.
