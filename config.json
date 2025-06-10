@@ -1,9 +1,9 @@
 {
-    "provider": "openai",
-    "model": "mistralai/devstral-small:free",
+    "provider": "deepseek",
+    "model": "deepseek-chat",
     "agents": [
         "reporter",
-        "local-retrieval"
+        "searcher"
     ],
     "db": "./local_files/test",
     "base_url": "https://openrouter.ai/api/v1"

@@ -10,7 +10,7 @@ import os
 
 class Gork(Model):
     def __init__(self, model: str = "", api_key: str = ""):
-        load_dotenv()
+        load_dotenv(override=True)
         self.api_key = os.getenv("XAI_API_KEY")
         self.model = model
         self.client = OpenAI(

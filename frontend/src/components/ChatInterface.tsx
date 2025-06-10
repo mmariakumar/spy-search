@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -395,9 +395,15 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
                             : 'bg-secondary/50 text-foreground border border-border/50'
                         }`}
                       >
-                        <pre className="whitespace-pre-wrap text-sm leading-relaxed font-sans break-words">
-                          {message.content}
-                        </pre>
+                        {message.type === 'assistant' ? (
+                          <div className="text-sm leading-relaxed break-words prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-muted prose-pre:text-foreground">
+                            <ReactMarkdown>{message.content}</ReactMarkdown>
+                          </div>
+                        ) : (
+                          <pre className="whitespace-pre-wrap text-sm leading-relaxed font-sans break-words">
+                            {message.content}
+                          </pre>
+                        )}
                       </div>
                       
                       {message.type === 'assistant' && (

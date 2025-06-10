@@ -245,6 +245,7 @@ async def quick_response_endpoint(
 
     validated_messages = [Message(**msg) for msg in messages_list]
 
+    logger.info(validated_messages)
     res = await quick_response_logic(query, validated_messages, files, api)
 
     file_details = []
@@ -307,15 +308,22 @@ async def quick_response_logic(
 ):
     """
         TODO: don't call this twice 
+        TODO: streaming
     """
     config = read_config()
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
+    quick_model.messages = messages[::-1]
+
+    if files != None:
+        pass # TODO use mark it down to convert to text and append into the data arr
 
     search_result = DuckSearch().search_result(query)
+    """
+        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
+    """
     prompt = quick_search_prompt(query , search_result) 
     # Example: call your model's completion method
     res = quick_model.completion(prompt)
-    # You can also process messages or files here if needed
     return res
 
 
