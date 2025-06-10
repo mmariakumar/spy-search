@@ -302,6 +302,12 @@ async def quick_response_logic(
     files: Optional[List[UploadFile]] = None,
     api: Optional[str] = None,
 ):
+    """
+        TODO: don't call this twice 
+    """
+    config = read_config()
+    quick_model: Model = Factory.get_model(config["provider"], config["model"])
+
     # Example: call your model's completion method
     res = quick_model.completion(query)
     # You can also process messages or files here if needed
