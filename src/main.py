@@ -31,8 +31,6 @@ async def generate_report(query, planner: Planner, agents: list[Agent]):
     report = await server.start(query=query)
     report = report["data"]
 
-    with open("report.md", "w", encoding="utf-8") as file:
-        file.write(report + "\n\n")
     return report
 
 
