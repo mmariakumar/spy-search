@@ -1,5 +1,5 @@
 from fastapi import APIRouter ,UploadFile, File, Form , HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse,StreamingResponse
 import json
 import os 
 import logging
@@ -19,6 +19,8 @@ from ..browser.duckduckgo import DuckSearch
 from ..prompt.quick_search import quick_search_prompt
 
 from typing import List, Optional, Dict
+
+import asyncio
 
 router = APIRouter()
 
@@ -292,6 +294,17 @@ async def report(
         "files_received": file_details,
         "messages_received": [msg.model_dump() for msg in validated_messages],
     }
+
+async def stream_data(message:str):
+    config = read_config()
+    m: Model = Factory.get_model(config["provider"], config["model"])
+    for chunk in m.completion_stream(message):
+        yield chunk
+        await asyncio.sleep(0) 
+
+@router.get("/stream_completion")
+async def stream_response(message: str):
+    return StreamingResponse(stream_data(message), media_type="text/plain")
 
 
 """
