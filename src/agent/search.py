@@ -107,7 +107,7 @@ class Search_agent(Agent):
         response = self.model.completion(prompt)
         logger.info(f"searcher response: {response}")
         time.sleep(3) ## foo foo solution
-        todo_list = json.loads(self._extract_response(response))
+        todo_list = (self._extract_response(response))
         
         logger.info(todo_list)
         k -= len(todo_list)

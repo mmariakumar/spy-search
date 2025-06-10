@@ -23,6 +23,7 @@ class RAG_agent(Agent):
         path: db path , default "./db"
     """
     def __init__(self, model:Model, path: str = "./local_db", filelist="./local_files"):
+        logger.info("Initalize RAG agent")
         self.model = model
         self.db = VectorSearch(path=path)
         # TODO: maybe don't use hard reset ? 
@@ -60,10 +61,11 @@ class RAG_agent(Agent):
             file_path = result["metadatas"][0][i]['file']  # fix: index correctly
             prompt = retrieval_prompt(docs, file_path)
             res = self.model.completion(prompt)
+            logger.info(f"response from llm: {res}")
             res = self._extract_response(res)
             logger.info(f"getting response {res}")
-            res = json.loads(res)
-            logger.info(f"loading ... {res} ")
+            #res = json.loads(res)
+            #logger.info(f"loading ... {res} ")
             data.append(res)
             
         return {"agent": "planner", "data":data , "task": ""}
