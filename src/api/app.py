@@ -15,6 +15,9 @@ from ..agent import Planner
 from ..factory import Factory
 from ..model import Model
 
+from ..browser.duckduckgo import DuckSearch
+from ..prompt.quick_search import quick_search_prompt
+
 from typing import List, Optional, Dict
 
 router = APIRouter()
@@ -308,8 +311,10 @@ async def quick_response_logic(
     config = read_config()
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
 
+    search_result = DuckSearch().search_result(query)
+    prompt = quick_search_prompt(query , search_result) 
     # Example: call your model's completion method
-    res = quick_model.completion(query)
+    res = quick_model.completion(prompt)
     # You can also process messages or files here if needed
     return res
 

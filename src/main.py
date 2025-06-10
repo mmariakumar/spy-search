@@ -9,6 +9,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 async def generate_report(query, planner: Planner, agents: list[Agent]):
+    """
+    TODO : multi debate framwork
+    """
     planner.query = query
     server = Server()
 
