@@ -121,6 +121,8 @@ class Reporter(Agent):
             res = self._extract_response(res)
 
             logger.info(f"getting response {res}")
+            final_report += "\n"
+            final_report += res["content"]
             
         return final_report
 
