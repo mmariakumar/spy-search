@@ -67,7 +67,7 @@ Watch the demo video on YouTube:
 [![Demo Video](https://img.youtube.com/vi/Dgb33BHtRwQ/0.jpg)](https://youtu.be/Dgb33BHtRwQ)
 
 
-[Watch the video](./docs/examples/sample.mov)
+[Watch the video](https://www.youtube.com/watch?v=JsYQGQou3sM)
 
 
 ## Contributing
