@@ -53,7 +53,7 @@ docker run -p 8000:8000 -p 8080:8080 spy-searcher
 ```
 
 完成上述步驟後，即可訪問：
-[http://localhost:8000](http://localhost:8000)
+[http://localhost:8000](http://localhost:8080)
 
 ---
 
