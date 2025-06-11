@@ -19,8 +19,8 @@ def quick_search_prompt(query, data):
     1. Evaluate the relevance of the provided data to the question. Disregard irrelevant data.
     2. Integrate useful data thoughtfully into your response.
     3. Include APA-style inline citations **formatted as clickable Markdown links**. For example, cite as:
-        - Correct: (Example, 2023) [Example](https://example.com)
-        - Incorrect: [(Example, 2023) (Example)][https://example.com]
+        - Correct: (Example, 20xx) [Example](https://example.com)
+        - Incorrect: [(Example, 20xx) (Example)][https://example.com]
     4. Write your response in clear, professional language with appropriate Markdown formatting:
         - Use `#` for main titles
         - Use `##` for subtitles
