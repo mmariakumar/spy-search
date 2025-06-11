@@ -1,7 +1,5 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -89,65 +87,100 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)] max-w-none mx-auto bg-background">
-      {/* Header with clear chat button - only show when messages exist */}
-      {messages.length > 0 && (
-        <div className="flex justify-between items-center p-3 border-b border-border/20 bg-background/95 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-medium text-foreground">Chat History</h2>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearChat}
-            className="text-muted-foreground hover:text-foreground text-sm"
-          >
-            Clear Chat
-          </Button>
-        </div>
-      )}
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <ScrollArea className="flex-1 px-4 md:px-6">
-          <div className="max-w-4xl mx-auto py-4">
-            {messages.length === 0 ? (
-              <div className="flex items-center justify-center h-[40vh] text-center">
-                <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                    <Bot className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-medium text-foreground">Start your intelligence search</h3>
-                    <p className="text-muted-foreground">Ask anything to generate comprehensive reports</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <MessageList 
-                messages={messages} 
-                isLoading={isLoading} 
-                isDeepResearch={false}
-                streamingMessageId={streamingMessageId}
+    <div className="flex flex-col min-h-[85vh] max-w-none mx-auto bg-background">
+      {messages.length === 0 ? (
+        // Perplexity-style centered input for empty state
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="w-full max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-light text-foreground mb-4">
+                What can I help you with?
+              </h2>
+              <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
+                Ask anything to generate comprehensive intelligence reports
+              </p>
+            </div>
+            
+            {/* Centered Input */}
+            <div className="mb-8">
+              <ChatInput
+                input={input}
+                setInput={setInput}
+                isLoading={isLoading}
+                agents={agents}
+                onSendMessage={handleSendMessage}
               />
-            )}
-          </div>
-        </ScrollArea>
+            </div>
 
-        {/* Fixed Input Area - Always Visible */}
-        <div className="border-t border-border/20 bg-background/98 backdrop-blur-sm">
-          <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
-            <ChatInput
-              input={input}
-              setInput={setInput}
-              isLoading={isLoading}
-              agents={agents}
-              onSendMessage={handleSendMessage}
-            />
+            {/* Suggested topics */}
+            <div className="flex flex-wrap gap-3 justify-center max-w-3xl mx-auto">
+              {[
+                "Current Events", 
+                "Parenting", 
+                "Compare", 
+                "Troubleshoot", 
+                "Health"
+              ].map((topic) => (
+                <Button
+                  key={topic}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setInput(`Tell me about ${topic.toLowerCase()}`)}
+                  className="rounded-full border border-border/40 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                >
+                  {topic}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        // Chat view with messages
+        <>
+          {/* Header with clear chat button */}
+          <div className="flex justify-between items-center p-4 border-b border-border/20 bg-background/95 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <Bot className="h-5 w-5 text-primary" />
+              <h2 className="text-base font-medium text-foreground">Intelligence Chat</h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearChat}
+              className="text-muted-foreground hover:text-foreground text-sm"
+            >
+              Clear Chat
+            </Button>
+          </div>
+
+          {/* Messages Area */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <ScrollArea className="flex-1 px-4 md:px-6">
+              <div className="max-w-4xl mx-auto py-6">
+                <MessageList 
+                  messages={messages} 
+                  isLoading={isLoading} 
+                  isDeepResearch={false}
+                  streamingMessageId={streamingMessageId}
+                />
+              </div>
+            </ScrollArea>
+
+            {/* Fixed Input Area */}
+            <div className="border-t border-border/20 bg-background/98 backdrop-blur-sm">
+              <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
+                <ChatInput
+                  input={input}
+                  setInput={setInput}
+                  isLoading={isLoading}
+                  agents={agents}
+                  onSendMessage={handleSendMessage}
+                />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -4,9 +4,16 @@ from langchain_community.tools import DuckDuckGoSearchRun , DuckDuckGoSearchResu
 class DuckSearch:
     def __init__(self):
         self.search_engine = DuckDuckGoSearchResults(backend="text" , output_format="list")
+        self.news_engine = DuckDuckGoSearchResults(backend="news" , output_format="list" , num_results=10)
 
     def search_result(self, query, k =5 , backend:str = "text"):
         result = self.search_engine.invoke(query)
         return result
+    
+    def today_new(self , category:str):
+        res = self.news_engine.invoke(category + "news")
+        return res
+
 
 #print(DuckSearch().search_result("test")[0]['snippet'])
+#print(DuckSearch().today_new("tech"))

@@ -2,10 +2,12 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Eye, MessageSquare } from "lucide-react";
+import { Settings, Eye, MessageSquare, Newspaper } from "lucide-react";
 import { ChatInterface } from "@/components/ChatInterface";
 import { AgentConfig } from "@/components/AgentConfig";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface Message {
   id: string;
@@ -18,6 +20,7 @@ const Index = () => {
   const [agents, setAgents] = useState<string[]>(["planner", "reporter"]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const { toast } = useToast();
 
   const handleAgentConfigSave = async (config: {
@@ -27,7 +30,6 @@ const Index = () => {
   }) => {
     setAgents(config.agents);
     
-    // Send agent selection, provider, and model to backend (excluding planner)
     const agentsToSend = config.agents.filter(agent => agent !== "planner");
     
     try {
@@ -50,6 +52,7 @@ const Index = () => {
           title: "Configuration Saved",
           description: `Agent selection, provider (${config.provider}), and model (${config.model}) have been saved successfully.`,
         });
+        setShowSettings(false);
       } else {
         throw new Error("Failed to save configuration");
       }
@@ -62,66 +65,88 @@ const Index = () => {
     }
   };
 
+  if (showSettings) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => setShowSettings(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              ← Back to Chat
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                <Settings className="h-5 w-5 text-primary" />
+              </div>
+              <h1 className="text-2xl font-light text-foreground">Settings</h1>
+            </div>
+            <div className="w-24"></div>
+          </div>
+
+          {/* Settings Content */}
+          <div className="max-w-3xl mx-auto">
+            <Card className="glass-card border-0">
+              <CardHeader className="pb-8">
+                <CardTitle className="flex items-center gap-3 text-2xl font-light">
+                  <Settings className="h-6 w-6 text-primary" />
+                  Agent Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AgentConfig
+                  agents={agents}
+                  onAgentConfigSave={handleAgentConfigSave}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
-        {/* Compact Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-sm">
-              <Eye className="h-6 w-6 text-primary" />
+        {/* Top Navigation */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                <Eye className="h-5 w-5 text-primary" />
+              </div>
+              <h1 className="text-xl font-light gradient-text">Spy Search</h1>
             </div>
-            <h1 className="text-3xl font-light gradient-text tracking-tight">
-              Spy Search
-            </h1>
+            <Link to="/news">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <Newspaper className="h-4 w-4 mr-2" />
+                Discover
+              </Button>
+            </Link>
           </div>
-          <p className="text-base text-muted-foreground max-w-xl mx-auto font-light">
-            Advanced AI-powered intelligence gathering platform
-          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowSettings(true)}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </Button>
         </div>
 
-        {/* Main Content */}
-        <div className="max-w-5xl mx-auto">
-          <Tabs defaultValue="chat" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-secondary/50 backdrop-blur-sm border border-border/50">
-              <TabsTrigger value="chat" className="flex items-center gap-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                <MessageSquare className="h-4 w-4" />
-                Intelligence Chat
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                <Settings className="h-4 w-4" />
-                Agent Configuration
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="chat" className="space-y-4">
-              <ChatInterface 
-                agents={agents} 
-                messages={messages}
-                setMessages={setMessages}
-                isLoading={isLoading}
-                setIsLoading={setIsLoading}
-              />
-            </TabsContent>
-
-            <TabsContent value="settings" className="space-y-8">
-              <Card className="glass-card border-0">
-                <CardHeader className="pb-8">
-                  <CardTitle className="flex items-center gap-3 text-2xl font-light">
-                    <Settings className="h-6 w-6 text-primary" />
-                    Agent Configuration
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <AgentConfig
-                    agents={agents}
-                    onAgentConfigSave={handleAgentConfigSave}
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+        {/* Main Chat Interface */}
+        <ChatInterface 
+          agents={agents} 
+          messages={messages}
+          setMessages={setMessages}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+        />
       </div>
     </div>
   );
