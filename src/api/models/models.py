@@ -10,7 +10,6 @@ class AgentsRequest(BaseModel):
 class FolderRequest(BaseModel):
     db :str
 
-
 class Message(BaseModel):
     role: str
     content: str
