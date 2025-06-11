@@ -376,13 +376,8 @@ def get_news(category:str):
     res = DuckSearch().today_new(category)
     return {"news":res}
 
-
 @router.post("/load_message")
 def load_message(title: str):
-    """
-    Load the message by title from messages.json and return a list of 
-    dicts with 'role' and 'content'.
-    """
     filename = "messages.json"
 
     if not os.path.exists(filename):
@@ -396,25 +391,18 @@ def load_message(title: str):
         except json.JSONDecodeError:
             messages = []
 
-    # Find the message with matching title
     for msg in messages:
         if msg.get("title") == title:
             content = msg.get("content")
-            # content might be a list or a single message
             if isinstance(content, list):
-                # Return list of dicts with role and content
                 return content
             elif isinstance(content, dict):
-                # Single dict, wrap in list
                 return [content]
             elif isinstance(content, str):
-                # If content is just string, return as one message with role from msg
                 return [{"role": msg.get("role", ""), "content": content}]
             else:
-                # Unexpected content format
                 raise HTTPException(status_code=500, detail="Invalid content format")
-    
-    # If title not found
+
     raise HTTPException(status_code=404, detail=f"Message with title '{title}' not found")
 
 @router.post("/delete_message")
@@ -448,13 +436,8 @@ def delete_message(title: str):
 
     return {"status": "success", "message": f"Message with title '{title}' deleted"}
 
-
 @router.post("/append_message")
 def append_message(message: Message, title: str):
-    """
-    Find the message with the given title and append the new message content.
-    If title does not exist, create a new message with the title.
-    """
     filename = "messages.json"
 
     # Load existing messages or start with empty list
@@ -472,22 +455,29 @@ def append_message(message: Message, title: str):
     # Find the message with the matching title
     for msg in messages:
         if msg.get("title") == title:
-            # Append new message content to existing content or list
-            # If content is a string, convert to list and append
-            if isinstance(msg.get("content"), list):
-                msg["content"].append({
-                    "role": message.role,
-                    "content": message.content
-                })
-            else:
+            # Normalize content to list
+            content = msg.get("content")
+            if isinstance(content, list):
+                # Append new message dict
+                content.append({"role": message.role, "content": message.content})
+            elif isinstance(content, dict):
+                # Convert dict to list and append new message
+                msg["content"] = [content, {"role": message.role, "content": message.content}]
+            elif isinstance(content, str):
+                # Convert string content into list of dicts and append new message
                 msg["content"] = [
-                    {"role": msg.get("role"), "content": msg.get("content")},
+                    {"role": msg.get("role", ""), "content": content},
                     {"role": message.role, "content": message.content}
                 ]
-            # Optionally update role if you want, or keep original role
+            else:
+                # Unexpected content format, just replace with list
+                msg["content"] = [{"role": message.role, "content": message.content}]
+            # Save and return success
+            with open(filename, "w", encoding="utf-8") as f:
+                json.dump(messages, f, ensure_ascii=False, indent=4)
             return {"status": "success", "message": f"Appended message to title '{title}'"}
 
-    # If title not found, create new message entry
+    # Title not found, create new entry
     new_message = {
         "title": title,
         "role": message.role,
@@ -497,12 +487,11 @@ def append_message(message: Message, title: str):
     }
     messages.append(new_message)
 
-    # Save back to file
+    # Save to file
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(messages, f, ensure_ascii=False, indent=4)
 
     return {"status": "success", "message": f"Created new title '{title}' and saved message"}
-
 
 """
     TODO: refactor
