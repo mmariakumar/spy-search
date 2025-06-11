@@ -67,6 +67,8 @@ Watch the demo video on YouTube:
 
 [![Demo Video](https://img.youtube.com/vi/Dgb33BHtRwQ/0.jpg)](https://youtu.be/Dgb33BHtRwQ)
 
+[Watch the video](./docs/examples/sample.mov)
+
 ## Contribution
 
 We welcome contributions of all kinds! Please note that Spy Search is currently in a rapid development phase focused on performance optimization. As a result, the codebase is evolving quickly and may undergo significant changes.
