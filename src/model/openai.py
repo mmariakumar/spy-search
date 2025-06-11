@@ -42,6 +42,16 @@ class OpenAI(Model):
             )
         return response.choices[0].message.content
     
+    def completion_stream(self, message):
+        self._add_message(message=message, role="user")
+        stream = self.client.chat.completions.create(
+            model=self.model, messages=self.messages, stream=True
+        )
+        for event in stream:
+            text_chunk = getattr(event.choices[0].delta, "content", None)
+            if text_chunk:
+                yield text_chunk
+    
     def add_system_instructuion(self, instruction: str):
         pass
 
@@ -57,5 +67,5 @@ class OpenAI(Model):
     def clear_message(self):
         self.messages = []
 
-    def _add_message(self, message, role="use"):
+    def _add_message(self, message, role="user"):
         self.messages.append({"role": "user", "content": message})

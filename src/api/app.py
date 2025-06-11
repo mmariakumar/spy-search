@@ -1,5 +1,5 @@
 from fastapi import APIRouter ,UploadFile, File, Form , HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse,StreamingResponse
 import json
 import os 
 import logging
@@ -20,8 +20,13 @@ from ..prompt.quick_search import quick_search_prompt
 
 from typing import List, Optional, Dict
 
-router = APIRouter()
+import asyncio
 
+router = APIRouter()
+"""
+TODO: !!! Refactor is needed 
+
+"""
 
 @router.get("/get_config")
 async def get_config():
@@ -260,6 +265,47 @@ async def quick_response_endpoint(
         "messages_received": [msg.model_dump() for msg in validated_messages],
     }
 
+async def stream_data(
+    query: str,
+    messages: str = Form(...),
+    files: Optional[List[UploadFile]] = File(None),
+    api: Optional[str] = Form(None),
+):
+    try:
+        messages_list = json.loads(messages)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in messages field")
+    validated_messages = [Message(**msg) for msg in messages_list]
+
+    logger.info(validated_messages)
+    
+    config = read_config()
+
+    quick_model: Model = Factory.get_model(config["provider"], config["model"])
+    quick_model.messages = validated_messages[:-1] if len(validated_messages) != 1 else []
+
+    if files != None:
+        pass # TODO use mark it down to convert to text and append into the data arr
+
+    search_result = DuckSearch().search_result(query)
+    """
+        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
+    """
+    prompt = quick_search_prompt(query , search_result) 
+    # Example: call your model's completion method
+    for chunk in quick_model.completion_stream(prompt):
+        yield chunk
+        await asyncio.sleep(0) 
+
+@router.post("/stream_completion/{query}")
+async def stream_response(
+    query: str,
+    messages: str = Form(...),
+    files: Optional[List[UploadFile]] = File(None),
+    api: Optional[str] = Form(None),
+):
+    return StreamingResponse(stream_data(query , messages , files , api), media_type="text/plain")
+
 
 @router.post("/report/{query}")
 async def report(
@@ -292,6 +338,8 @@ async def report(
         "files_received": file_details,
         "messages_received": [msg.model_dump() for msg in validated_messages],
     }
+
+
 
 
 """
