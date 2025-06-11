@@ -64,11 +64,10 @@ Now you can access
 
 Watch the demo video on YouTube:
 
-[![Demo Video](https://img.youtube.com/vi/Dgb33BHtRwQ/0.jpg)](https://youtu.be/Dgb33BHtRwQ)
 
+https://github.com/user-attachments/assets/32cbcd0e-6993-41a9-8039-5216b84ed866
 
-[Watch the video](https://www.youtube.com/watch?v=JsYQGQou3sM)
-
+[old version video](https://www.youtube.com/watch?v=Dgb33BHtRwQ)
 
 ## Contributing
 
