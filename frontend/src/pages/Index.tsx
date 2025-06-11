@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -63,26 +64,26 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 backdrop-blur-sm">
-              <Eye className="h-10 w-10 text-primary" />
+      <div className="container mx-auto px-4 py-6">
+        {/* Compact Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-sm">
+              <Eye className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="text-6xl font-light gradient-text tracking-tight">
+            <h1 className="text-3xl font-light gradient-text tracking-tight">
               Spy Search
             </h1>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
-            Advanced AI-powered intelligence gathering and report generation platform
+          <p className="text-base text-muted-foreground max-w-xl mx-auto font-light">
+            Advanced AI-powered intelligence gathering platform
           </p>
         </div>
 
         {/* Main Content */}
         <div className="max-w-5xl mx-auto">
           <Tabs defaultValue="chat" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-12 bg-secondary/50 backdrop-blur-sm border border-border/50">
+            <TabsList className="grid w-full grid-cols-2 mb-6 bg-secondary/50 backdrop-blur-sm border border-border/50">
               <TabsTrigger value="chat" className="flex items-center gap-3 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                 <MessageSquare className="h-4 w-4" />
                 Intelligence Chat
@@ -93,7 +94,7 @@ const Index = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="chat" className="space-y-8">
+            <TabsContent value="chat" className="space-y-4">
               <ChatInterface 
                 agents={agents} 
                 messages={messages}

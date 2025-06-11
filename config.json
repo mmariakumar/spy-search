@@ -1,6 +1,6 @@
 {
-    "provider": "ollama",
-    "model": "deepseek-r1:1.5b",
+    "provider": "deepseek",
+    "model": "deepseek-chat",
     "agents": [
         "reporter",
         "searcher"
