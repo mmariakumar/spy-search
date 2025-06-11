@@ -11,7 +11,6 @@ We welcome all kinds of contributions, including issue reports, discussions, and
 
 For development purposes, you can use the following installation method, which is more convenient for modifying the code:
 ```bash 
-python setup.py
 chmod +x installation.sh
 chmod +x run.sh
 ./installation.sh
