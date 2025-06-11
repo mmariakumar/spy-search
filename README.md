@@ -47,7 +47,7 @@ docker run -p 8000:8000 -p 8080:8080 spy-searcher
 ```
 
 Now you can access  
-[http://localhost:8000](http://localhost:8000)
+[http://localhost:8000](http://localhost:8080)
 
 
 ## Community 
