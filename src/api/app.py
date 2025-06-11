@@ -19,6 +19,9 @@ from ..browser.duckduckgo import DuckSearch
 from ..prompt.quick_search import quick_search_prompt
 
 from typing import List, Optional, Dict
+from .controller.files import (
+    select_folder_handler
+)
 
 import asyncio
 
@@ -40,13 +43,7 @@ async def select_folder(folder_name: str):
     Change the column db to ./local_files/{the folder here} 
     Return success true
     """
-    folder_path = f"./local_files/{folder_name}"
-
-    config = read_config()
-    config['db'] = folder_path
-
-    write_config(config)
-
+    folder_path = select_folder_handler(folder_name)
     logger.info(f"{folder_path}") 
     if not os.path.exists(folder_path):
         raise HTTPException(status_code=404, detail="Folder not found")
@@ -82,15 +79,6 @@ async def create_folder(filepath: FolderCreateRequest):
 
 @router.get("/folder_list", response_model=FolderListResponse)
 async def get_folder():
-    """
-    Get the folder list in local_files
-    Return {
-        files: [
-            {"foldername": "folder1", "contents": ["file1", "file2"]},
-            {"foldername": "folder2", "contents": ["file3", "file4"]}
-        ]
-    }
-    """
     base_path = "./local_files"
     
     if not os.path.exists(base_path):
@@ -102,7 +90,6 @@ async def get_folder():
         for item in os.listdir(base_path):
             full_path = os.path.join(base_path, item)
             if os.path.isdir(full_path):
-                # Get list of contents in the folder
                 contents = os.listdir(full_path)
                 folder_list.append(FolderContent(
                     foldername=item,
@@ -339,6 +326,10 @@ async def report(
         "messages_received": [msg.model_dump() for msg in validated_messages],
     }
 
+@router.get("/news/{category}")
+def get_news(category:str):
+    res = DuckSearch().today_new(category)
+    return {"news":res}
 
 """
     TODO: refactor

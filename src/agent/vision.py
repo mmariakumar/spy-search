@@ -1,4 +1,5 @@
 from .agent import Agent
+from ..model import Model
 
 from ..utils import read_config
 
@@ -7,11 +8,10 @@ class Vision(Agent):
         a vision agent should able to visually watch something
         in the base case it can watch video or photos provides by the user 
     """
-    def __init__(self, model , db = "./local_files"):
+    def __init__(self, model:Model , db = "./local_files"):
         self.model = model
-        
         config = read_config()
-        self.db = config['db']
+        self.db = config.get("db" , db)
 
     async def run(self, task , data):
         """
