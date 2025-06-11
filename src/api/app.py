@@ -340,8 +340,6 @@ async def report(
     }
 
 
-
-
 """
     TODO: refactor
 """

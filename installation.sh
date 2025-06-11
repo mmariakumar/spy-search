@@ -7,16 +7,18 @@ command_exists() {
 }
 
 # Check if uvicorn is installed
-if command_exists uvicorn; then
-  echo "uvicorn is installed, running uvicorn pip install..."
+if command_exists uv; then
+  echo "uv is installed, running uv pip install..."
 else
-  echo "uvicorn not found, installing uvicorn..."
-  pip install uvicorn || { echo "Failed to install uvicorn"; exit 1; }
+  echo "uv not found, installing uv..."
+  pip install uv || { echo "Failed to install uvicorn"; exit 1; }
 fi
 
 # Use pip to install requirements (uvicorn is already installed if needed)
-pip install -r requirements.txt || { echo "pip install failed"; exit 1; }
+uv pip install uvicorn
+
+uv pip install -r requirements.txt || { echo "uv pip install failed"; exit 1; }
 
 cd frontend || { echo "Failed to enter frontend directory"; exit 1; }
 
-npm install || { echo "npm install failed"; exit 1; }
+npm install --legacy-peer-deps || { echo "npm install failed"; exit 1; }
