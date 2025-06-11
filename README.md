@@ -3,18 +3,15 @@
 **Spy Search** is an agentic search framework designed to outperform current web search agents with a focus on faster, more efficient daily usage.
 
 While commercial solutions like Manus charge $200 per month, Spy Search leverages open-source models to provide a cost-effective alternative without sacrificing performance.
-Currently our searching-speed is quite slow yet we can generate a long length consistent report (around 2000 words) with latest current infomration! This problem will be tackle after the release of v1.0. 
+Currently our searching-speed is quite slow yet we can generate a long length consistent report (around 2000 words) with latest current information! This problem will be tackle after the release of v1.0. 
 
-[簡體中文](./docs/ch_simplify.md) 
-[繁體中文](./docs/ch_complex.md)
-[日本語](./docs/jap.md)
+##### [簡體中文](./docs/ch_simplify.md) 
+##### [繁體中文](./docs/ch_complex.md)
+##### [日本語](./docs/jap.md)
 ---
 
 ## Roadmap
-**News**: Spy-searcher has just released v0.3 ! 
-
-- **Version 1.0:** Agentic Search Functionality  
-- **Version 2.0:** Localized Cache to Accelerate Search Speed  
+**News**: 2025-06-10 Spy-searcher has just released v0.3 ! 
 
 ---
 
@@ -29,6 +26,8 @@ To set up just run
 ```shell
 python setup.py
 ```
+
+Add your API key in the .env file if you want to use API. Currently we support openAI, Claude, Gork & Deepseek. If you use ollama you don't need to do anything. 
 
 config the config.json file, you may copy the following template
 ```json
@@ -67,13 +66,38 @@ Watch the demo video on YouTube:
 
 [![Demo Video](https://img.youtube.com/vi/Dgb33BHtRwQ/0.jpg)](https://youtu.be/Dgb33BHtRwQ)
 
+
 [Watch the video](./docs/examples/sample.mov)
 
-## Contribution
 
-We welcome contributions of all kinds! Please note that Spy Search is currently in a rapid development phase focused on performance optimization. As a result, the codebase is evolving quickly and may undergo significant changes.
+## Contributing
 
-Join us in building the future of fast, affordable search!
+We welcome contributions from the community! Here’s how you can contribute:
+
+### Pull Requests
+
+- We appreciate pull requests that fix bugs, add features, or improve documentation.
+- Please ensure your PR:
+  - Is based on the latest `main` branch.
+  - Includes clear descriptions and testing instructions.
+  - Passes all automated tests and checks.
+
+Once submitted, maintainers will review your PR and provide feedback or merge it if it meets the project standards.
+
+### Issues
+
+- Feel free to open issues for bugs, feature requests, or questions.
+- When submitting an issue, please include:
+  - A clear and descriptive title.
+  - Steps to reproduce (for bugs).
+  - Expected and actual behavior.
+  - Any relevant environment or version information.
+
+Maintainers will acknowledge your issue, label it appropriately, and work on resolving it or discuss it with you.
+
+---
+
+Thank you for helping improve this project! Your contributions make a difference.
 
 
 ## Thank you everyone's support :) 
