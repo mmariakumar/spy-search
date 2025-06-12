@@ -8,7 +8,15 @@ import shutil
 logger = logging.getLogger(__name__)
 
 from ..utils import read_config , write_config
-from .models.models import AgentsRequest , Message, FolderContent , FolderListResponse , FolderCreateRequest
+from .models.models import (
+    AgentsRequest , 
+    Message, 
+    FolderContent , 
+    FolderListResponse , 
+    FolderCreateRequest , 
+    TitleRequest,
+    AppendRequest,
+)
 from ..main import generate_report
 
 from ..agent import Planner
@@ -28,7 +36,7 @@ import asyncio
 router = APIRouter()
 """
 TODO: !!! Refactor is needed 
-
+INSANE REALLY NEED REFACTOR BROOO!!!
 """
 
 @router.get("/get_config")
@@ -53,21 +61,32 @@ async def select_folder(folder_name: str):
         
     return {"success": True, "selected_folder": folder_name}
 
-@router.post("/delete_folder")
-async def delete_folder(filepath: str):
-    """
-    Delete specific folder
-    """
-    full_path = f"./local_files/{filepath}"
-    
-    if not os.path.exists(full_path):
-        raise HTTPException(status_code=404, detail="Folder not found")
-        
-    try:
-        shutil.rmtree(full_path)
-        return {"success": True}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
+
+@router.post("/delete_message")
+def delete_message(request: TitleRequest):
+    title = request.title
+    filename = "messages.json"
+
+    if not os.path.exists(filename):
+        raise HTTPException(status_code=404, detail="messages.json file not found")
+
+    with open(filename, "r", encoding="utf-8") as f:
+        try:
+            messages = json.load(f)
+            if not isinstance(messages, list):
+                messages = []
+        except json.JSONDecodeError:
+            messages = []
+
+    new_messages = [msg for msg in messages if msg.get("title", "").strip().lower() != title.strip().lower()]
+
+    if len(new_messages) == len(messages):
+        raise HTTPException(status_code=404, detail=f"Message with title '{title}' not found")
+
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(new_messages, f, ensure_ascii=False, indent=4)
+
+    return {"status": "success", "message": f"Message with title '{title}' deleted"}
 
 @router.post("/create_folder")
 async def create_folder(filepath: FolderCreateRequest):
@@ -134,6 +153,25 @@ async def upload_file(
             "success": False,
             "error": str(e)
         }
+    
+@router.get("/get_titles")
+def get_titles():
+    filename = "messages.json"
+
+    if not os.path.exists(filename):
+        raise HTTPException(status_code=404, detail="messages.json file not found")
+
+    with open(filename, "r", encoding="utf-8") as f:
+        try:
+            messages = json.load(f)
+            if not isinstance(messages, list):
+                messages = []
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail="Failed to parse messages.json")
+
+    titles = [msg.get("title", "") for msg in messages if "title" in msg]
+
+    return {"titles": titles}
 
 @router.post("/delete_file")
 async def delete_file(filepath: str):
@@ -376,8 +414,11 @@ def get_news(category:str):
     res = DuckSearch().today_new(category)
     return {"news":res}
 
+
 @router.post("/load_message")
-def load_message(title: str):
+def load_message(request: TitleRequest):
+    title = request.title
+
     filename = "messages.json"
 
     if not os.path.exists(filename):
@@ -392,7 +433,7 @@ def load_message(title: str):
             messages = []
 
     for msg in messages:
-        if msg.get("title") == title:
+        if msg.get("title", "").strip().lower() == title.strip().lower():
             content = msg.get("content")
             if isinstance(content, list):
                 return content
@@ -437,9 +478,10 @@ def delete_message(title: str):
     return {"status": "success", "message": f"Message with title '{title}' deleted"}
 
 @router.post("/append_message")
-def append_message(message: Message, title: str):
+def append_message(request: AppendRequest):
+    message = request.message
+    title = request.title
     filename = "messages.json"
-
     # Load existing messages or start with empty list
     if os.path.exists(filename):
         with open(filename, "r", encoding="utf-8") as f:

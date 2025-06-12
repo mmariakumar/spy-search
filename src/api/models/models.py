@@ -23,3 +23,10 @@ class FolderListResponse(BaseModel):
 
 class FolderCreateRequest(BaseModel):
     filepath: str
+
+class TitleRequest(BaseModel):
+    title: str
+
+class AppendRequest(BaseModel):
+    message: Message
+    title: str  # or TitleRequest if it's a model with a single `title` field

@@ -1,13 +1,11 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Eye, MessageSquare, Newspaper } from "lucide-react";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { ChatInterface } from "@/components/ChatInterface";
-import { AgentConfig } from "@/components/AgentConfig";
+import { ConversationSidebar } from "@/components/ConversationSidebar";
+import { TopNavigation } from "@/components/layout/TopNavigation";
+import { SettingsPage } from "@/components/layout/SettingsPage";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 
 interface Message {
   id: string;
@@ -21,6 +19,7 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [currentConversationTitle, setCurrentConversationTitle] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleAgentConfigSave = async (config: {
@@ -65,90 +64,86 @@ const Index = () => {
     }
   };
 
+  const handleConversationSelect = async (title: string) => {
+    try {
+      const response = await fetch('http://localhost:8000/load_message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      
+      if (response.ok) {
+        const loadedMessages = await response.json();
+        const messagesWithDates = loadedMessages.map((msg: any, index: number) => ({
+          id: `${index}`,
+          type: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content,
+          timestamp: new Date()
+        }));
+        setMessages(messagesWithDates);
+        setCurrentConversationTitle(title);
+      }
+    } catch (error) {
+      console.error('Failed to load conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleNewConversation = () => {
+    setMessages([]);
+    setCurrentConversationTitle(null);
+    setIsLoading(false);
+  };
+
+  const handleConversationCreated = (title: string) => {
+    setCurrentConversationTitle(title);
+  };
+
   if (showSettings) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => setShowSettings(false)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              ← Back to Chat
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
-                <Settings className="h-5 w-5 text-primary" />
-              </div>
-              <h1 className="text-2xl font-light text-foreground">Settings</h1>
-            </div>
-            <div className="w-24"></div>
-          </div>
-
-          {/* Settings Content */}
-          <div className="max-w-3xl mx-auto">
-            <Card className="glass-card border-0">
-              <CardHeader className="pb-8">
-                <CardTitle className="flex items-center gap-3 text-2xl font-light">
-                  <Settings className="h-6 w-6 text-primary" />
-                  Agent Configuration
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AgentConfig
-                  agents={agents}
-                  onAgentConfigSave={handleAgentConfigSave}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+      <SettingsPage
+        agents={agents}
+        onBack={() => setShowSettings(false)}
+        onAgentConfigSave={handleAgentConfigSave}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
-        {/* Top Navigation */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
-                <Eye className="h-5 w-5 text-primary" />
-              </div>
-              <h1 className="text-xl font-light gradient-text">Spy Search</h1>
-            </div>
-            <Link to="/news">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <Newspaper className="h-4 w-4 mr-2" />
-                Discover
-              </Button>
-            </Link>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowSettings(true)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
-          </Button>
-        </div>
-
-        {/* Main Chat Interface */}
-        <ChatInterface 
-          agents={agents} 
-          messages={messages}
-          setMessages={setMessages}
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
+    <SidebarProvider defaultOpen={false}>
+      <div className="min-h-screen flex w-full bg-background">
+        <ConversationSidebar
+          currentConversationTitle={currentConversationTitle}
+          onConversationSelect={handleConversationSelect}
+          onNewConversation={handleNewConversation}
         />
+        
+        <SidebarInset className="flex-1">
+          <div className="flex flex-col h-screen">
+            <TopNavigation
+              onNewConversation={handleNewConversation}
+              onSettingsClick={() => setShowSettings(true)}
+            />
+
+            <div className="flex-1 min-h-0">
+              <ChatInterface 
+                agents={agents} 
+                messages={messages}
+                setMessages={setMessages}
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+                currentConversationId={currentConversationTitle}
+                onConversationCreated={handleConversationCreated}
+              />
+            </div>
+          </div>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
