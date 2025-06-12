@@ -27,11 +27,11 @@ class DuckSearch:
 
     def search_result(self, query: str, k: int = 5, backend: str = "text" , deep_search:bool = False) -> list:
         results = self.search_engine.invoke(query)
-    if deep_search == True:
-        for result in results[:k]:
-            url = result.get("link")
-            full_text = self._extract_full_text(url)
-            result["full_content"] = full_text
+        if deep_search == True:
+            for result in results[:k]:
+                url = result.get("link")
+                full_text = self._extract_full_text(url)
+                result["full_content"] = full_text
         return results[:k]
 
     def today_new(self, category: str) -> list:
