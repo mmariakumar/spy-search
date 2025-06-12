@@ -1,5 +1,6 @@
 
 import { useState, useCallback } from 'react';
+import { conversationManager } from '@/components/ConversationSidebar';
 
 interface Message {
   id: string;
@@ -12,9 +13,17 @@ interface UseStreamingChatProps {
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  currentConversationTitle?: string | null;
+  onConversationCreated?: (title: string) => void;
 }
 
-export const useStreamingChat = ({ messages, setMessages, setIsLoading }: UseStreamingChatProps) => {
+export const useStreamingChat = ({ 
+  messages, 
+  setMessages, 
+  setIsLoading,
+  currentConversationTitle,
+  onConversationCreated
+}: UseStreamingChatProps) => {
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
 
   const sendStreamingMessage = useCallback(async (
@@ -31,6 +40,16 @@ export const useStreamingChat = ({ messages, setMessages, setIsLoading }: UseStr
 
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
+
+    // Determine conversation title
+    let conversationTitle = currentConversationTitle;
+    if (!conversationTitle) {
+      conversationTitle = messageContent.substring(0, 30) + "...";
+      onConversationCreated?.(conversationTitle);
+    }
+
+    // Save user message immediately
+    await conversationManager.saveMessage(conversationTitle, 'user', messageContent);
 
     // Create assistant message placeholder for streaming
     const assistantMessageId = (Date.now() + 1).toString();
@@ -71,6 +90,8 @@ export const useStreamingChat = ({ messages, setMessages, setIsLoading }: UseStr
         throw new Error(`Server error: ${response.status}`);
       }
 
+      let finalContent = '';
+
       if (isDeepResearch) {
         // Handle non-streaming response for deep research
         const data = await response.json();
@@ -79,10 +100,11 @@ export const useStreamingChat = ({ messages, setMessages, setIsLoading }: UseStr
           throw new Error(data.error);
         }
 
+        finalContent = data.report;
         setMessages(prev => 
           prev.map(msg => 
             msg.id === assistantMessageId 
-              ? { ...msg, content: data.report }
+              ? { ...msg, content: finalContent }
               : msg
           )
         );
@@ -114,7 +136,12 @@ export const useStreamingChat = ({ messages, setMessages, setIsLoading }: UseStr
             )
           );
         }
+
+        finalContent = accumulatedContent;
       }
+
+      // Save complete assistant response
+      await conversationManager.saveMessage(conversationTitle, 'assistant', finalContent);
 
     } catch (error) {
       const errorMessage = "Sorry, I encountered an error while generating your report. Please try again.";
@@ -127,12 +154,15 @@ export const useStreamingChat = ({ messages, setMessages, setIsLoading }: UseStr
         )
       );
 
+      // Save error message
+      await conversationManager.saveMessage(conversationTitle, 'assistant', errorMessage);
+
       console.error('Streaming error:', error);
     } finally {
       setIsLoading(false);
       setStreamingMessageId(null);
     }
-  }, [messages, setMessages, setIsLoading]);
+  }, [messages, setMessages, setIsLoading, currentConversationTitle, onConversationCreated]);
 
   return {
     sendStreamingMessage,

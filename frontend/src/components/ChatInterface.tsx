@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Bot } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageList } from "./chat/MessageList";
 import { ChatInput } from "./chat/ChatInput";
@@ -20,65 +19,31 @@ interface ChatInterfaceProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  currentConversationId?: string | null;
+  onConversationCreated?: (title: string) => void;
 }
 
-export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsLoading }: ChatInterfaceProps) => {
+export const ChatInterface = ({ 
+  agents, 
+  messages, 
+  setMessages, 
+  isLoading, 
+  setIsLoading,
+  currentConversationId,
+  onConversationCreated 
+}: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
-  const { toast } = useToast();
 
   const { sendStreamingMessage, streamingMessageId } = useStreamingChat({
     messages,
     setMessages,
-    setIsLoading
+    setIsLoading,
+    currentConversationTitle: currentConversationId,
+    onConversationCreated
   });
 
-  // Save messages to localStorage whenever messages change
-  useEffect(() => {
-    const messagesToSave = messages.map(msg => ({
-      ...msg,
-      timestamp: msg.timestamp.toISOString() // Convert Date to string for storage
-    }));
-    localStorage.setItem('spy-search-messages', JSON.stringify(messagesToSave));
-  }, [messages]);
-
-  // Save loading state to localStorage
-  useEffect(() => {
-    localStorage.setItem('spy-search-loading', JSON.stringify(isLoading));
-  }, [isLoading]);
-
-  // Load messages and loading state from localStorage on component mount
-  useEffect(() => {
-    const savedMessages = localStorage.getItem('spy-search-messages');
-    const savedLoading = localStorage.getItem('spy-search-loading');
-    
-    if (savedMessages && messages.length === 0) {
-      try {
-        const parsedMessages = JSON.parse(savedMessages);
-        const messagesWithDates = parsedMessages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp) // Convert string back to Date
-        }));
-        setMessages(messagesWithDates);
-      } catch (error) {
-        console.error('Failed to load messages from localStorage:', error);
-      }
-    }
-
-    if (savedLoading) {
-      try {
-        const parsedLoading = JSON.parse(savedLoading);
-        setIsLoading(parsedLoading);
-      } catch (error) {
-        console.error('Failed to load loading state from localStorage:', error);
-      }
-    }
-  }, [setMessages, setIsLoading, messages.length]);
-
-  // Clear localStorage when user explicitly clears chat
   const clearChat = () => {
     setMessages([]);
-    localStorage.removeItem('spy-search-messages');
-    localStorage.removeItem('spy-search-loading');
     setIsLoading(false);
   };
 
@@ -87,13 +52,12 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
   };
 
   return (
-    <div className="flex flex-col min-h-[85vh] max-w-none mx-auto bg-background">
+    <div className="flex flex-col h-full max-w-none mx-auto bg-background">
       {messages.length === 0 ? (
-        // Perplexity-style centered input for empty state
         <div className="flex-1 flex flex-col items-center justify-center px-4">
           <div className="w-full max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-light text-foreground mb-4">
+              <h2 className="text-3xl font-light text-foreground mb-4">
                 What can I help you with?
               </h2>
               <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
@@ -101,7 +65,6 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
               </p>
             </div>
             
-            {/* Centered Input */}
             <div className="mb-8">
               <ChatInput
                 input={input}
@@ -112,7 +75,6 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
               />
             </div>
 
-            {/* Suggested topics */}
             <div className="flex flex-wrap gap-3 justify-center max-w-3xl mx-auto">
               {[
                 "Current Events", 
@@ -135,9 +97,7 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
           </div>
         </div>
       ) : (
-        // Chat view with messages
         <>
-          {/* Header with clear chat button */}
           <div className="flex justify-between items-center p-4 border-b border-border/20 bg-background/95 backdrop-blur-sm">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary" />
@@ -153,7 +113,6 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
             </Button>
           </div>
 
-          {/* Messages Area */}
           <div className="flex-1 flex flex-col min-h-0">
             <ScrollArea className="flex-1 px-4 md:px-6">
               <div className="max-w-4xl mx-auto py-6">
@@ -166,7 +125,6 @@ export const ChatInterface = ({ agents, messages, setMessages, isLoading, setIsL
               </div>
             </ScrollArea>
 
-            {/* Fixed Input Area */}
             <div className="border-t border-border/20 bg-background/98 backdrop-blur-sm">
               <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
                 <ChatInput
