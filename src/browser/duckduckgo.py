@@ -25,7 +25,7 @@ class DuckSearch:
             print(f"[ERROR] Failed to fetch {url} -> {e}")
             return ""
 
-    def search_result(self, query: str, k: int = 5, backend: str = "text") -> list:
+    def search_result(self, query: str, k: int = 5, backend: str = "text" , deep_search:bool = False) -> list:
         results = self.search_engine.invoke(query)
         for result in results[:k]:
             url = result.get("link")
