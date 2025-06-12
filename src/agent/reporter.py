@@ -122,7 +122,7 @@ class Reporter(Agent):
 
             logger.info(f"getting response {res}")
             final_report += "\n"
-            final_report += res["content"]
+            final_report += res.get("content" , "")
             
         return final_report
 

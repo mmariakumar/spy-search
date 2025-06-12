@@ -3,7 +3,6 @@ from fastapi.responses import FileResponse,StreamingResponse
 import json
 import os 
 import logging
-import shutil
 
 logger = logging.getLogger(__name__)
 
