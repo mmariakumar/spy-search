@@ -212,6 +212,7 @@ litellm==1.72.2
     # via crawl4ai
 lxml==5.4.0
     # via
+    #   spy-search (pyproject.toml)
     #   crawl4ai
     #   duckduckgo-search
 magika==0.6.2

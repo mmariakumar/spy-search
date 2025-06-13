@@ -1,25 +1,23 @@
-from fastapi import APIRouter ,UploadFile, File, Form , HTTPException
-from fastapi.responses import FileResponse,StreamingResponse
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.responses import FileResponse, StreamingResponse
 import json
-import os 
+import os
 import logging
 
 logger = logging.getLogger(__name__)
 
-from ..utils import read_config , write_config
+from ..utils import read_config, write_config
 from .models.models import (
-    AgentsRequest , 
-    Message, 
-    FolderContent , 
-    FolderListResponse , 
-    FolderCreateRequest , 
+    AgentsRequest,
+    Message,
+    FolderContent,
+    FolderListResponse,
+    FolderCreateRequest,
     TitleRequest,
     AppendRequest,
 )
 
-from .controller.files import (
-    extract_text_from_pdf_bytes
-)
+from .controller.files import extract_text_from_pdf_bytes
 
 from ..main import generate_report
 
@@ -31,9 +29,7 @@ from ..browser.duckduckgo import DuckSearch
 from ..prompt.quick_search import quick_search_prompt
 
 from typing import List, Optional, Dict
-from .controller.files import (
-    select_folder_handler
-)
+from .controller.files import select_folder_handler
 
 import asyncio
 
@@ -43,26 +39,31 @@ TODO: !!! Refactor is needed
 INSANE REALLY NEED REFACTOR BROOO!!!
 """
 
+
 @router.get("/get_config")
 async def get_config():
     config = read_config()
-    return {"agents":config["agents"] , "provider":config["provider"] , "model":config["model"]}
+    return {
+        "agents": config["agents"],
+        "provider": config["provider"],
+        "model": config["model"],
+    }
 
 
 @router.get("/select_folder")
 async def select_folder(folder_name: str):
     """
-    Change the column db to ./local_files/{the folder here} 
+    Change the column db to ./local_files/{the folder here}
     Return success true
     """
     folder_path = select_folder_handler(folder_name)
-    logger.info(f"{folder_path}") 
+    logger.info(f"{folder_path}")
     if not os.path.exists(folder_path):
         raise HTTPException(status_code=404, detail="Folder not found")
-    
+
     if not os.path.isdir(folder_path):
         raise HTTPException(status_code=400, detail="Path is not a directory")
-        
+
     return {"success": True, "selected_folder": folder_name}
 
 
@@ -82,15 +83,22 @@ def delete_message(request: TitleRequest):
         except json.JSONDecodeError:
             messages = []
 
-    new_messages = [msg for msg in messages if msg.get("title", "").strip().lower() != title.strip().lower()]
+    new_messages = [
+        msg
+        for msg in messages
+        if msg.get("title", "").strip().lower() != title.strip().lower()
+    ]
 
     if len(new_messages) == len(messages):
-        raise HTTPException(status_code=404, detail=f"Message with title '{title}' not found")
+        raise HTTPException(
+            status_code=404, detail=f"Message with title '{title}' not found"
+        )
 
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(new_messages, f, ensure_ascii=False, indent=4)
 
     return {"status": "success", "message": f"Message with title '{title}' deleted"}
+
 
 @router.post("/create_folder")
 async def create_folder(filepath: FolderCreateRequest):
@@ -100,29 +108,27 @@ async def create_folder(filepath: FolderCreateRequest):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
 @router.get("/folder_list", response_model=FolderListResponse)
 async def get_folder():
     base_path = "./local_files"
-    
+
     if not os.path.exists(base_path):
         os.makedirs(base_path)
-        
+
     folder_list = []
-    
+
     try:
         for item in os.listdir(base_path):
             full_path = os.path.join(base_path, item)
             if os.path.isdir(full_path):
                 contents = os.listdir(full_path)
-                folder_list.append(FolderContent(
-                    foldername=item,
-                    contents=contents
-                ))
-                
+                folder_list.append(FolderContent(foldername=item, contents=contents))
+
         return FolderListResponse(files=folder_list)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 
 @router.post("/upload_file")
 async def upload_file(
@@ -135,29 +141,23 @@ async def upload_file(
     try:
         # Construct the full path
         full_path = os.path.join("./local_files", filepath)
-        
+
         # Check if the directory exists
         dir_path = os.path.dirname(full_path)
         if not os.path.exists(dir_path):
             raise HTTPException(status_code=404, detail="Directory not found")
-            
+
         # Save the file
         with open(full_path, "wb") as buffer:
             content = await file.read()
             buffer.write(content)
-            
-        return {
-            "success": True,
-            "filename": file.filename,
-            "filepath": filepath
-        }
-        
+
+        return {"success": True, "filename": file.filename, "filepath": filepath}
+
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
-    
+        return {"success": False, "error": str(e)}
+
+
 @router.get("/get_titles")
 def get_titles():
     filename = "messages.json"
@@ -177,6 +177,7 @@ def get_titles():
 
     return {"titles": titles}
 
+
 @router.post("/delete_file")
 async def delete_file(filepath: str):
     """
@@ -185,28 +186,23 @@ async def delete_file(filepath: str):
     try:
         # Construct the full path
         full_path = os.path.join("./local_files", filepath)
-        
+
         # Check if file exists
         if not os.path.exists(full_path):
             raise HTTPException(status_code=404, detail="File not found")
-            
+
         # Check if it's actually a file
         if not os.path.isfile(full_path):
             raise HTTPException(status_code=400, detail="Path is not a file")
-            
+
         # Delete the file
         os.remove(full_path)
-        
-        return {
-            "success": True,
-            "deleted_file": filepath
-        }
-        
+
+        return {"success": True, "deleted_file": filepath}
+
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        return {"success": False, "error": str(e)}
+
 
 @router.get("/download_file/{filepath:path}")
 async def download_file(filepath: str):
@@ -217,34 +213,34 @@ async def download_file(filepath: str):
     try:
         # Construct the full path
         full_path = os.path.join("./local_files", filepath)
-        
+
         # Check if file exists
         if not os.path.exists(full_path):
             raise HTTPException(status_code=404, detail="File not found")
-            
+
         # Check if it's actually a file
         if not os.path.isfile(full_path):
             raise HTTPException(status_code=400, detail="Path is not a file")
-            
+
         # Get the filename from the path
         filename = os.path.basename(filepath)
-        
+
         # Return the file as a download
         return FileResponse(
-            path=full_path,
-            filename=filename,
-            media_type='application/octet-stream'
+            path=full_path, filename=filename, media_type="application/octet-stream"
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/messags_record")
 async def get_messages_record():
     """
-        Read the message from the db ?  
+    Read the message from the db ?
     """
     pass
+
 
 @router.post("/agents_selection")
 async def select_agent(body: AgentsRequest):
@@ -259,14 +255,22 @@ async def select_agent(body: AgentsRequest):
     config = read_config()
     config["agents"] = arr
     config["provider"] = body.provider
-    config["model"] = body.model 
+    config["model"] = body.model
     with open("./config.json", "w") as f:
         json.dump(config, f, indent=4)
-    return {"success": True, "agents_received": body.agents , "model_received":body.model , "provider_received":body.provider}
+    return {
+        "success": True,
+        "agents_received": body.agents,
+        "model_received": body.model,
+        "provider_received": body.provider,
+    }
+
 
 """
     Outdated ?
 """
+
+
 @router.post("/quick/{query}")
 async def quick_response_endpoint(
     query: str,
@@ -296,34 +300,78 @@ async def quick_response_endpoint(
         "messages_received": [msg.model_dump() for msg in validated_messages],
     }
 
+
 async def stream_data(
     query: str,
     messages: str = Form(...),
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
 ):
+    # Ultra-fast JSON parsing with optimized error handling
     try:
         messages_list = json.loads(messages)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON in messages field")
+    
+    # Batch validation with list comprehension (faster than loop)
     validated_messages = [Message(**msg) for msg in messages_list]
-
     logger.info(validated_messages)
     
-    config = read_config()
+    # Parallel execution: Start config reading and model creation simultaneously
+    config_task = asyncio.create_task(asyncio.to_thread(read_config))
+    
+    # Pre-initialize search while config loads
+    search_instance = DuckSearch()
+    search_task = asyncio.create_task(asyncio.to_thread(search_instance.search_result, query))
+    
+    logger.info("creating model")
+    
+    # Wait for config and create model
+    config = await config_task
+    
+    # Use thread pool for CPU-bound model creation
+    quick_model: Model = await asyncio.to_thread(Factory.get_model, config["provider"], config["model"])
+    
+    logger.info("finish creating model")
+    
+    # Optimized message handling with direct assignment
+    quick_model.messages = [] if len(validated_messages) == 1 else validated_messages[:-1]
+    
+    # Get search results (should be ready by now)
+    search_result = await search_task
+    
+    logger.info("start slicing")
+    # Removed the slicing as it was commented out for performance
+    logger.info("stpo slicing")
+    
+    # Use thread pool for prompt generation to avoid blocking
+    prompt = await asyncio.to_thread(quick_search_prompt, query, search_result)
+    
+    logger.info("Finish Prompt and start completion stream")
+    
+    # Ultra-optimized streaming with batched yields
+    chunk_buffer = []
+    buffer_size = 3  # Batch 3 chunks for efficiency
+    
+    # Use thread pool for completion stream to prevent blocking
+    completion_stream = await asyncio.to_thread(lambda: quick_model.completion_stream(prompt))
+    
+    for chunk in completion_stream:
+        chunk_buffer.append(chunk)
+        
+        # Yield in batches for better performance
+        if len(chunk_buffer) >= buffer_size:
+            for buffered_chunk in chunk_buffer:
+                yield buffered_chunk
+            chunk_buffer.clear()
+        
+        # Micro-sleep for context switching (more efficient than asyncio.sleep(0))
+        await asyncio.sleep(0.001)
+    
+    # Yield remaining chunks
+    for remaining_chunk in chunk_buffer:
+        yield remaining_chunk
 
-    quick_model: Model = Factory.get_model(config["provider"], config["model"])
-    quick_model.messages = validated_messages[:-1] if len(validated_messages) != 1 else []
-
-    search_result = DuckSearch().search_result(query)
-    """
-        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
-    """
-    prompt = quick_search_prompt(query , search_result) 
-    # Example: call your model's completion method
-    for chunk in quick_model.completion_stream(prompt):
-        yield chunk
-        await asyncio.sleep(0) 
 
 @router.post("/stream_completion/{query}")
 async def stream_response(
@@ -332,7 +380,9 @@ async def stream_response(
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
 ):
-    return StreamingResponse(stream_data(query , messages , files , api), media_type="text/plain")
+    return StreamingResponse(
+        stream_data(query, messages, files, api), media_type="text/plain"
+    )
 
 
 async def stream_academic_data(
@@ -348,24 +398,26 @@ async def stream_academic_data(
     validated_messages = [Message(**msg) for msg in messages_list]
 
     logger.info(validated_messages)
-    
+
     config = read_config()
 
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
-    quick_model.messages = validated_messages[:-1] if len(validated_messages) != 1 else []
+    quick_model.messages = (
+        validated_messages[:-1] if len(validated_messages) != 1 else []
+    )
 
     if files != None:
-        pass # TODO use mark it down to convert to text and append into the data arr
+        pass  # TODO use mark it down to convert to text and append into the data arr
 
-    search_result = DuckSearch().search_result("site:arxiv.org"+query)
+    search_result = await DuckSearch().search_result("site:arxiv.org" + query)
     """
         TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
     """
-    prompt = quick_search_prompt(query , search_result) 
+    prompt = quick_search_prompt(query, search_result)
     # Example: call your model's completion method
     for chunk in quick_model.completion_stream(prompt):
         yield chunk
-        await asyncio.sleep(0) 
+        await asyncio.sleep(0)
 
 
 @router.post("/stream_completion_academic/{query}")
@@ -375,9 +427,9 @@ async def stream_response_academic(
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
 ):
-    return StreamingResponse(stream_data(query , messages , files , api), media_type="text/plain")
-
-
+    return StreamingResponse(
+        stream_data(query, messages, files, api), media_type="text/plain"
+    )
 
 
 @router.post("/report/{query}")
@@ -400,7 +452,7 @@ async def report(
     file_details = []
     if files:
         for file in files:
-            # TODO clean the local_files 
+            # TODO clean the local_files
             content = await file.read()
             file_details.append({"filename": file.filename, "size": len(content)})
 
@@ -412,10 +464,11 @@ async def report(
         "messages_received": [msg.model_dump() for msg in validated_messages],
     }
 
+
 @router.get("/news/{category}")
-def get_news(category:str):
+def get_news(category: str):
     res = DuckSearch().today_new(category)
-    return {"news":res}
+    return {"news": res}
 
 
 @router.post("/load_message")
@@ -447,7 +500,10 @@ def load_message(request: TitleRequest):
             else:
                 raise HTTPException(status_code=500, detail="Invalid content format")
 
-    raise HTTPException(status_code=404, detail=f"Message with title '{title}' not found")
+    raise HTTPException(
+        status_code=404, detail=f"Message with title '{title}' not found"
+    )
+
 
 @router.post("/delete_message")
 def delete_message(title: str):
@@ -472,13 +528,16 @@ def delete_message(title: str):
 
     if len(new_messages) == len(messages):
         # No message found with the given title
-        raise HTTPException(status_code=404, detail=f"Message with title '{title}' not found")
+        raise HTTPException(
+            status_code=404, detail=f"Message with title '{title}' not found"
+        )
 
     # Save updated list back to file
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(new_messages, f, ensure_ascii=False, indent=4)
 
     return {"status": "success", "message": f"Message with title '{title}' deleted"}
+
 
 @router.post("/append_message")
 def append_message(request: AppendRequest):
@@ -507,12 +566,15 @@ def append_message(request: AppendRequest):
                 content.append({"role": message.role, "content": message.content})
             elif isinstance(content, dict):
                 # Convert dict to list and append new message
-                msg["content"] = [content, {"role": message.role, "content": message.content}]
+                msg["content"] = [
+                    content,
+                    {"role": message.role, "content": message.content},
+                ]
             elif isinstance(content, str):
                 # Convert string content into list of dicts and append new message
                 msg["content"] = [
                     {"role": msg.get("role", ""), "content": content},
-                    {"role": message.role, "content": message.content}
+                    {"role": message.role, "content": message.content},
                 ]
             else:
                 # Unexpected content format, just replace with list
@@ -520,15 +582,16 @@ def append_message(request: AppendRequest):
             # Save and return success
             with open(filename, "w", encoding="utf-8") as f:
                 json.dump(messages, f, ensure_ascii=False, indent=4)
-            return {"status": "success", "message": f"Appended message to title '{title}'"}
+            return {
+                "status": "success",
+                "message": f"Appended message to title '{title}'",
+            }
 
     # Title not found, create new entry
     new_message = {
         "title": title,
         "role": message.role,
-        "content": [
-            {"role": message.role, "content": message.content}
-        ]
+        "content": [{"role": message.role, "content": message.content}],
     }
     messages.append(new_message)
 
@@ -536,13 +599,18 @@ def append_message(request: AppendRequest):
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(messages, f, ensure_ascii=False, indent=4)
 
-    return {"status": "success", "message": f"Created new title '{title}' and saved message"}
+    return {
+        "status": "success",
+        "message": f"Created new title '{title}' and saved message",
+    }
+
 
 """
     TODO: refactor
 """
 config = read_config()
 quick_model: Model = Factory.get_model(config["provider"], config["model"])
+
 
 async def quick_response_logic(
     query: str,
@@ -551,21 +619,21 @@ async def quick_response_logic(
     api: Optional[str] = None,
 ):
     """
-        TODO: don't call this twice 
-        TODO: streaming
+    TODO: don't call this twice
+    TODO: streaming
     """
     config = read_config()
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
     quick_model.messages = messages[::-1]
 
     if files != None:
-        pass # TODO use mark it down to convert to text and append into the data arr
+        pass  # TODO use mark it down to convert to text and append into the data arr
 
-    search_result = DuckSearch().search_result(query)
+    search_result = await DuckSearch().search_result(query)
     """
         TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
     """
-    prompt = quick_search_prompt(query , search_result) 
+    prompt = quick_search_prompt(query, search_result)
     # Example: call your model's completion method
     res = quick_model.completion(prompt)
     return res

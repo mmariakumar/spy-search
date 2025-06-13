@@ -1,32 +1,45 @@
 import datetime
 
+
 def quick_search_prompt(query, data):
     return f"""
-    Today is {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}.
+    ## Timestamp
+    {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
-    # Task Overview
+    ## Task
 
-    You have been presented with the following question:
+    Respond to the following question:
     > {query}
 
-    # Reference Material
+    ## Reference Material
 
-    Below is a list of the most recent and relevant information available:
+    The following information has been retrieved for your use:
     {data}
 
-    # Instructions
+    ## Instructions
 
-    1. Evaluate the relevance of the provided data to the question. Disregard irrelevant data.
-    2. Integrate useful data thoughtfully into your response.
-    3. Include APA-style inline citations **formatted as clickable Markdown links**. For example, cite as:
-        - Correct: (Example, 20xx) [Example](https://example.com)
-        - Incorrect: [(Example, 20xx) (Example)][https://example.com]
-    4. Write your response in clear, professional language with appropriate Markdown formatting:
-        - Use `#` for main titles
-        - Use `##` for subtitles
-    5. Include only relevant content.
-    6. Ensure inline citations appear **inside parentheses**, followed by the Markdown link wrapped around the source title (as shown in the example).
-    7. Include the table if you think it is necessary.
+    1. **Assess Relevance**: Review the reference material and disregard any irrelevant data.
+    2. **Integrate Thoughtfully**: Use only relevant and accurate data to support your response.
+    3. **Use APA-style Inline Citations**:
+       - Format citations as clickable Markdown links inside parentheses.
+       - Correct: (Author, 20xx) [Source Title](https://example.com)
+       - Incorrect: [(Author, 20xx) Source Title][https://example.com]
+    4. **Formatting Requirements**:
+       - Use `#` for the main title
+       - Use `##` for section headings
+       - Apply standard Markdown for clarity (lists, bold, etc.)
+    5. **Be Concise and Professional**:
+       - Avoid unnecessary filler or unrelated content.
+       - Present information clearly and with a professional tone.
+    6. **Use Tables If Appropriate**: Include tables only when they enhance clarity or comprehension.
+    7. **Length Guidelines**:
+       - Trivial questions: ~50-100 words
+       - Simple questions: ~200-400 words
+       - Complex questions: ~400-600 words
+    8. **Steps for complex**
+       - Summary with links 
+       - More deatils infomation 
+       - write like professional
 
-    Please ensure the response is informative, concise, and easy to read.
+    Ensure the final response is informative, well-structured, and easy to read.
     """
