@@ -59,15 +59,16 @@ export const FileUpload = ({
   return (
     <>
       {uploadedFiles.length > 0 && (
-        <div className="mb-3 p-3 bg-secondary/30 rounded-xl">
+        <div className="mb-3 p-3 bg-secondary/30 rounded-xl disabled:">
           <div className="flex flex-wrap gap-2">
             {uploadedFiles.map((file, index) => (
-              <div key={index} className="flex items-center gap-2 bg-background/50 px-3 py-1 rounded-lg text-sm">
+              <div key={index} className="flex items-center gap-2 bg-background/50 px-3 py-1 rounded-lg text-sm disabled:">
                 <FileText className="h-3 w-3" />
                 <span className="truncate max-w-[150px]">{file.name}</span>
                 <button
-                  onClick={() => removeFile(index)}
-                  className="text-muted-foreground hover:text-foreground"
+                  //onClick={() => removeFile(index)}
+                  //className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -94,8 +95,8 @@ export const FileUpload = ({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          className="self-end px-3 py-3 rounded-xl flex-shrink-0"
+          //onClick={() => fileInputRef.current?.click()}
+          className="self-end px-3 py-3 rounded-xl flex-shrink-0 disabled:"
         >
           <Upload className="h-4 w-4" />
         </Button>
