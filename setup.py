@@ -11,12 +11,12 @@ def create_json_file(path, content):
 
 if __name__ == "__main__":
     file_path = ".env"
-    env_content = """
-    DEEPSEEK_API=<YOUR-DEEPSEEK-API>
-    GEMINI_API=<YOU-GEMINI-API>
-    XAI_API_KEY=<XAI API KEY>
-    OPENAI_API_KEY=<YOUR OPENAI API KEY>
-    """
+    env_content = """\
+DEEPSEEK_API=<YOUR-DEEPSEEK-API>
+GEMINI_API=<YOU-GEMINI-API>
+XAI_API_KEY=<XAI API KEY>
+OPENAI_API_KEY=<YOUR OPENAI API KEY>
+"""
     create_env_file(file_path, env_content)
     print(f".env file created at {os.path.abspath(file_path)}")
 
