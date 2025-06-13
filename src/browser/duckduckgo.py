@@ -30,7 +30,7 @@ class DuckSearch:
 
                 # Read only first 100KB to avoid huge downloads (adjust size as needed)
                 content = b""
-                max_bytes = 60 * 1024  # 100 KB
+                max_bytes = 40 * 1024  # 100 KB
                 for chunk in response.iter_content(chunk_size=1024):
                     content += chunk
                     if len(content) >= max_bytes:
@@ -105,7 +105,7 @@ async def deep_search_async(results, k):
         updated_results = []
         for task in asyncio.as_completed(tasks):
             try:
-                updated_results.append(await asyncio.wait_for(task, timeout=0.355))
+                updated_results.append(await asyncio.wait_for(task, timeout=0.5))
             except asyncio.TimeoutError:
                 logger.warning("[WARN] Extraction timed out for one of the results.")
             except Exception as e:
