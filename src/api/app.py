@@ -315,10 +315,9 @@ async def stream_data(
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
     quick_model.messages = validated_messages[:-1] if len(validated_messages) != 1 else []
 
-    search_result = DuckSearch().search_result(query)
-    """
-        TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
-    """
+    search_result = await DuckSearch().search_result(query)
+    search_result = str(search_result)[:6000]
+
     prompt = quick_search_prompt(query , search_result) 
     # Example: call your model's completion method
     for chunk in quick_model.completion_stream(prompt):
@@ -357,7 +356,7 @@ async def stream_academic_data(
     if files != None:
         pass # TODO use mark it down to convert to text and append into the data arr
 
-    search_result = DuckSearch().search_result("site:arxiv.org"+query)
+    search_result = await DuckSearch().search_result("site:arxiv.org"+query)
     """
         TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
     """
@@ -561,7 +560,7 @@ async def quick_response_logic(
     if files != None:
         pass # TODO use mark it down to convert to text and append into the data arr
 
-    search_result = DuckSearch().search_result(query)
+    search_result = await DuckSearch().search_result(query)
     """
         TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
     """

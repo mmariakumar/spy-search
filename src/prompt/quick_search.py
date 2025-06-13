@@ -27,6 +27,7 @@ def quick_search_prompt(query, data):
     5. Include only relevant content.
     6. Ensure inline citations appear **inside parentheses**, followed by the Markdown link wrapped around the source title (as shown in the example).
     7. Include the table if you think it is necessary.
+    8. If it is a complex problem answer around 300 to 500 words, simple problem answer 100 to 200 words, trival 50 words.
 
     Please ensure the response is informative, concise, and easy to read.
     """
