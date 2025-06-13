@@ -1,6 +1,6 @@
 {
-    "provider": "openai",
-    "model": "mistralai/devstral-small:free",
+    "provider": "deepseek",
+    "model": "deepseek-chat",
     "agents": [
         "reporter",
         "searcher"
