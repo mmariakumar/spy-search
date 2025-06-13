@@ -1,6 +1,6 @@
 {
     "provider": "openai",
-    "model": "mistralai/magistral-small-2506",
+    "model": "meta-llama/llama-4-maverick:free",
     "agents": [
         "reporter"
     ],

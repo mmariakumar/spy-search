@@ -315,6 +315,8 @@ async def stream_data(
     
     # Batch validation with list comprehension (faster than loop)
     validated_messages = [Message(**msg) for msg in messages_list]
+    user_queries = [msg.content for msg in validated_messages if msg.role == 'user']
+    combined_query = " ".join(user_queries)
     logger.info(validated_messages)
     
     # Parallel execution: Start config reading and model creation simultaneously
@@ -322,7 +324,7 @@ async def stream_data(
     
     # Pre-initialize search while config loads
     search_instance = DuckSearch()
-    search_task = asyncio.create_task(asyncio.to_thread(search_instance.search_result, query))
+    search_task = asyncio.create_task(asyncio.to_thread(search_instance.search_result, combined_query))
     
     logger.info("creating model")
     
