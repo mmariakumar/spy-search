@@ -35,6 +35,7 @@ bcrypt==4.3.0
     # via chromadb
 beautifulsoup4==4.13.4
     # via
+    #   spy-search (pyproject.toml)
     #   crawl4ai
     #   markdownify
     #   markitdown

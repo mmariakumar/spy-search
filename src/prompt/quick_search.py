@@ -24,9 +24,9 @@ def quick_search_prompt(query, data):
     4. Write your response in clear, professional language with appropriate Markdown formatting:
         - Use `#` for main titles
         - Use `##` for subtitles
-    5. The response should be about 500 words.
-    6. Include only relevant content.
-    7. Ensure inline citations appear **inside parentheses**, followed by the Markdown link wrapped around the source title (as shown in the example).
+    5. Include only relevant content.
+    6. Ensure inline citations appear **inside parentheses**, followed by the Markdown link wrapped around the source title (as shown in the example).
+    7. Include the table if you think it is necessary.
 
     Please ensure the response is informative, concise, and easy to read.
     """

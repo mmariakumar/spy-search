@@ -2,7 +2,10 @@ import re
 import requests
 from html import unescape
 from langchain_community.tools import DuckDuckGoSearchResults
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor, as_completed , wait
+
+import time 
 
 import logging 
 logger = logging.getLogger(__name__)
@@ -16,18 +19,24 @@ class DuckSearch:
         try:
             headers = {"User-Agent": "Mozilla/5.0"}
             response = requests.get(url, headers=headers, timeout=5)
-            html = response.text
-            # Extract content inside <p> tags using regex
-            paragraphs = re.findall(r"<p.*?>(.*?)</p>", html, re.DOTALL | re.IGNORECASE)
-            # Clean and join paragraphs
-            text = " ".join(unescape(re.sub(r"<.*?>", "", p)).strip() for p in paragraphs)
-            return text.strip()[:limit]
+            response.raise_for_status()  # Raise HTTPError if bad response
+
+            soup = BeautifulSoup(response.text, "html.parser")
+            paragraphs = soup.find_all("p")
+
+            # Extract text, unescape HTML entities, strip whitespace
+            texts = [unescape(p.get_text(strip=True)) for p in paragraphs if p.get_text(strip=True)]
+
+            text = " ".join(texts)
+            logger.info(text)
+            return text[:limit].strip()
+
         except Exception as e:
-            print(f"[ERROR] Failed to fetch {url} -> {e}")
+            logger.error(f"[ERROR] Failed to fetch {url} -> {e}")
             return ""
 
     def search_result(self, query: str, k: int = 5, backend: str = "text", deep_search: bool = True) -> list:
-        logger.info("start searching")
+        logger.info("start searching... ")
         results = self.search_engine.invoke(query)
         if deep_search:
             def _extract_and_update(result):
@@ -36,14 +45,17 @@ class DuckSearch:
                 result["full_content"] = full_text
                 return result
 
-            with ThreadPoolExecutor(max_workers=10) as executor:
+            with ThreadPoolExecutor(max_workers=k) as executor:
                 futures = [executor.submit(_extract_and_update, result) for result in results[:k]]
-                for future in as_completed(futures):
+                done, not_done = wait(futures, timeout=4)
+                for future in not_done:
+                    future.cancel()
+                for future in done:
                     try:
-                        future.result()  # catch exceptions if any
+                        future.result()
                     except Exception as e:
                         print(f"[ERROR] Exception during deep search extraction: {e}")
-        logger.info("stop searching")
+        logger.info("end searching ...")
         return results[:k]
 
     def today_new(self, category: str) -> list:
