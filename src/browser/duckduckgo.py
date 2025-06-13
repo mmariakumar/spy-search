@@ -5,8 +5,6 @@ from langchain_community.tools import DuckDuckGoSearchResults
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed , wait
 
-import time 
-
 import logging 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +16,10 @@ class DuckSearch:
     def _extract_full_text(self, url: str, limit: int = 400) -> str:
         try:
             headers = {"User-Agent": "Mozilla/5.0"}
-            response = requests.get(url, headers=headers, timeout=5)
+            response = requests.get(url, headers=headers, timeout=2.5)
             response.raise_for_status()  # Raise HTTPError if bad response
 
-            soup = BeautifulSoup(response.text, "html.parser")
+            soup = BeautifulSoup(response.text, "lxml")
             paragraphs = soup.find_all("p")
 
             # Extract text, unescape HTML entities, strip whitespace
