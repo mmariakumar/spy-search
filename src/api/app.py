@@ -18,7 +18,7 @@ from .models.models import (
 )
 
 from .controller.files import (
-    extract_text_from_pdf_file
+    extract_text_from_pdf_bytes
 )
 
 from ..main import generate_report
@@ -302,8 +302,6 @@ async def stream_data(
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
 ):
-
-
     try:
         messages_list = json.loads(messages)
     except json.JSONDecodeError:
@@ -317,11 +315,6 @@ async def stream_data(
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
     quick_model.messages = validated_messages[:-1] if len(validated_messages) != 1 else []
 
-    if files:
-        for file in files:
-            text = await extract_text_from_pdf_file(file)
-            logger.info(text)
-    
     search_result = DuckSearch().search_result(query)
     """
         TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 

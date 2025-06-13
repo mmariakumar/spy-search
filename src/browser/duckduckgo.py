@@ -15,7 +15,7 @@ class DuckSearch:
         self.search_engine = DuckDuckGoSearchResults(backend="text", output_format="list")
         self.news_engine = DuckDuckGoSearchResults(backend="news", output_format="list", num_results=9)
 
-    def _extract_full_text(self, url: str, limit: int = 500) -> str:
+    def _extract_full_text(self, url: str, limit: int = 400) -> str:
         try:
             headers = {"User-Agent": "Mozilla/5.0"}
             response = requests.get(url, headers=headers, timeout=5)

@@ -30,11 +30,7 @@ def download_file_handler():
     pass 
 
 
-async def extract_text_from_pdf_file(file: UploadFile) -> str:
-    # Read bytes asynchronously
-    file_bytes = await file.read()
-    # Open PDF using PyMuPDF (fitz)
-    import fitz
+def extract_text_from_pdf_bytes(file_bytes: bytes) -> str:
     doc = fitz.open(stream=file_bytes, filetype="pdf")
     text = ""
     for page in doc:
