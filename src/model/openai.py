@@ -54,7 +54,6 @@ class OpenAI(Model):
                 messages=self.messages,
                 stream=True,
                 temperature=0.7,
-                # max_tokens=150
             )
 
             buffer = []
