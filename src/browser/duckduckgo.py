@@ -29,6 +29,7 @@ class DuckSearch:
             return ""
 
     def search_result(self, query: str, k: int = 5, backend: str = "text", deep_search: bool = False) -> list:
+        logger.info("start searching... ")
         results = self.search_engine.invoke(query)
         if deep_search:
             def _extract_and_update(result):
@@ -47,8 +48,8 @@ class DuckSearch:
                         future.result()
                     except Exception as e:
                         print(f"[ERROR] Exception during deep search extraction: {e}")
-
-            return results[:k]
+        logger.info("end searching ...")
+        return results[:k]
 
     def today_new(self, category: str) -> list:
         if category == "technology":
