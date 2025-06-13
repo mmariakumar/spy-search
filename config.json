@@ -1,6 +1,11 @@
 {
+<<<<<<< v0.3.1-test
     "provider": "openai",
     "model": "meta-llama/llama-3.3-70b-instruct:free",
+=======
+    "provider": "deepseek",
+    "model": "deepseek-chat",
+>>>>>>> main
     "agents": [
         "reporter"
     ],
