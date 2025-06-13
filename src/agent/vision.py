@@ -59,7 +59,4 @@ class Vision(Agent):
     async def get_send_format(self):
         return {
             "response": "Text describing the image or saved image path"
-        }
-
-
-    
+        }    
