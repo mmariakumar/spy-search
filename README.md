@@ -57,18 +57,15 @@ Now you can access
 [Discord](https://discord.gg/rrsMgBdJJt)
 
 
-## Example 
-
-- [Example Report (HTML)](./docs/examples/example_report.html)
-
-![Example Search](./docs/examples/example_search.png)
-
 ## Demo Video
 
 Watch the demo video on YouTube:
 
 
-https://github.com/user-attachments/assets/32cbcd0e-6993-41a9-8039-5216b84ed866
+https://github.com/user-attachments/assets/3e6ef332-d055-421c-bf0a-5f866ba52b11
+
+
+
 
 [old version video](https://www.youtube.com/watch?v=Dgb33BHtRwQ)
 
