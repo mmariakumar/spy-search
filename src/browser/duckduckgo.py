@@ -2,7 +2,9 @@ import re
 import requests
 from html import unescape
 from langchain_community.tools import DuckDuckGoSearchResults
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed , wait
+
+import time 
 
 import logging 
 logger = logging.getLogger(__name__)
@@ -26,8 +28,7 @@ class DuckSearch:
             print(f"[ERROR] Failed to fetch {url} -> {e}")
             return ""
 
-    def search_result(self, query: str, k: int = 5, backend: str = "text", deep_search: bool = True) -> list:
-        logger.info("start searching")
+    def search_result(self, query: str, k: int = 5, backend: str = "text", deep_search: bool = False) -> list:
         results = self.search_engine.invoke(query)
         if deep_search:
             def _extract_and_update(result):
@@ -36,15 +37,18 @@ class DuckSearch:
                 result["full_content"] = full_text
                 return result
 
-            with ThreadPoolExecutor(max_workers=10) as executor:
+            with ThreadPoolExecutor(max_workers=k) as executor:
                 futures = [executor.submit(_extract_and_update, result) for result in results[:k]]
-                for future in as_completed(futures):
+                done, not_done = wait(futures, timeout=2)
+                for future in not_done:
+                    future.cancel()
+                for future in done:
                     try:
-                        future.result()  # catch exceptions if any
+                        future.result()
                     except Exception as e:
                         print(f"[ERROR] Exception during deep search extraction: {e}")
-        logger.info("stop searching")
-        return results[:k]
+
+            return results[:k]
 
     def today_new(self, category: str) -> list:
         if category == "technology":
