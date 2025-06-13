@@ -32,11 +32,14 @@ Add your API key in the .env file if you want to use API. Currently we support o
 config the config.json file, you may copy the following template
 ```json
 {
-    "provider": "ollama",
-    "model": "deepseek-r1:7b",
+    "provider": "openai",
+    "model": "",
     "agents": [
-        "reporter"
-    ]
+        "reporter",
+        "searcher"
+    ],
+    "db": "./local_files/test",
+    "base_url": "https://openrouter.ai/api/v1"
 }
 ```
 
