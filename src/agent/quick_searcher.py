@@ -33,7 +33,7 @@ class Quick_searcher(Agent):
         for ele in res:
             result = {
                 "title":ele["title"],
-                "summary":ele["snippet"],
+                "summary":ele.get("full_content" , ""),
                 "brief_summary":ele["snippet"],
                 "keywords": [],
                 "url":ele['link']

@@ -118,6 +118,7 @@ class Reporter(Agent):
 
             prompt = report_task(tasks, t, source)
             res = self.model.completion(prompt)
+            logger.info(f"geting response {res}")
             res = self._extract_response(res)
 
             logger.info(f"getting response {res}")
