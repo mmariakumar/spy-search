@@ -315,7 +315,7 @@ async def stream_data(
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
     quick_model.messages = validated_messages[:-1] if len(validated_messages) != 1 else []
 
-    search_result = await DuckSearch().search_result(query)
+    search_result = DuckSearch().search_result(query)
     search_result = str(search_result)[:6000]
 
     prompt = quick_search_prompt(query , search_result) 
