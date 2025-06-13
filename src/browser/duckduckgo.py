@@ -2,22 +2,23 @@ import re
 import requests
 from html import unescape
 from langchain_community.tools import DuckDuckGoSearchResults
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import logging 
+logger = logging.getLogger(__name__)
 
 class DuckSearch:
     def __init__(self):
         self.search_engine = DuckDuckGoSearchResults(backend="text", output_format="list")
         self.news_engine = DuckDuckGoSearchResults(backend="news", output_format="list", num_results=9)
 
-    def _extract_full_text(self, url: str, limit: int = 3000) -> str:
+    def _extract_full_text(self, url: str, limit: int = 500) -> str:
         try:
             headers = {"User-Agent": "Mozilla/5.0"}
             response = requests.get(url, headers=headers, timeout=5)
             html = response.text
-
             # Extract content inside <p> tags using regex
             paragraphs = re.findall(r"<p.*?>(.*?)</p>", html, re.DOTALL | re.IGNORECASE)
-
             # Clean and join paragraphs
             text = " ".join(unescape(re.sub(r"<.*?>", "", p)).strip() for p in paragraphs)
             return text.strip()[:limit]
@@ -25,13 +26,24 @@ class DuckSearch:
             print(f"[ERROR] Failed to fetch {url} -> {e}")
             return ""
 
-    def search_result(self, query: str, k: int = 5, backend: str = "text" , deep_search:bool = False) -> list:
+    def search_result(self, query: str, k: int = 5, backend: str = "text", deep_search: bool = True) -> list:
+        logger.info("start searching")
         results = self.search_engine.invoke(query)
-        if deep_search == True:
-            for result in results[:k]:
+        if deep_search:
+            def _extract_and_update(result):
                 url = result.get("link")
                 full_text = self._extract_full_text(url)
                 result["full_content"] = full_text
+                return result
+
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                futures = [executor.submit(_extract_and_update, result) for result in results[:k]]
+                for future in as_completed(futures):
+                    try:
+                        future.result()  # catch exceptions if any
+                    except Exception as e:
+                        print(f"[ERROR] Exception during deep search extraction: {e}")
+        logger.info("stop searching")
         return results[:k]
 
     def today_new(self, category: str) -> list:
