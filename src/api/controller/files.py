@@ -1,4 +1,6 @@
 from ...utils import read_config, write_config
+from fastapi import UploadFile
+import fitz  # PyMuPDF
 """
     This files should handle 
 """
@@ -26,3 +28,15 @@ def delete_file_handler():
 
 def download_file_handler():
     pass 
+
+
+async def extract_text_from_pdf_file(file: UploadFile) -> str:
+    # Read bytes asynchronously
+    file_bytes = await file.read()
+    # Open PDF using PyMuPDF (fitz)
+    import fitz
+    doc = fitz.open(stream=file_bytes, filetype="pdf")
+    text = ""
+    for page in doc:
+        text += page.get_text()
+    return text

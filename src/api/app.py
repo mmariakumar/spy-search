@@ -16,6 +16,11 @@ from .models.models import (
     TitleRequest,
     AppendRequest,
 )
+
+from .controller.files import (
+    extract_text_from_pdf_file
+)
+
 from ..main import generate_report
 
 from ..agent import Planner
@@ -259,7 +264,9 @@ async def select_agent(body: AgentsRequest):
         json.dump(config, f, indent=4)
     return {"success": True, "agents_received": body.agents , "model_received":body.model , "provider_received":body.provider}
 
-
+"""
+    Outdated ?
+"""
 @router.post("/quick/{query}")
 async def quick_response_endpoint(
     query: str,
@@ -295,6 +302,8 @@ async def stream_data(
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
 ):
+
+
     try:
         messages_list = json.loads(messages)
     except json.JSONDecodeError:
@@ -307,10 +316,12 @@ async def stream_data(
 
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
     quick_model.messages = validated_messages[:-1] if len(validated_messages) != 1 else []
-    
-    if files != None:
-        pass # TODO use mark it down to convert to text and append into the data arr
 
+    if files:
+        for file in files:
+            text = await extract_text_from_pdf_file(file)
+            logger.info(text)
+    
     search_result = DuckSearch().search_result(query)
     """
         TODO: do embedding here if content is relevant then don't search top 5 content maybe just top 2 content 
