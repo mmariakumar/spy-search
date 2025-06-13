@@ -122,8 +122,13 @@ class Reporter(Agent):
             res = self._extract_response(res)
 
             logger.info(f"getting response {res}")
-            final_report += "\n"
-            final_report += res.get("content" , "")
+            try:
+                final_report += "\n"
+                final_report += res["content"]
+                logger.info(res)
+                logger.info(type(res))
+            except:
+                final_report += ""
             logger.info("final report ... ") # maybe yield final report here ?
             
         return final_report
