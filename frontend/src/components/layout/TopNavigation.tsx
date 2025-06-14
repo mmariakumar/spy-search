@@ -2,7 +2,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Settings, Eye, MessageSquare, Newspaper, GraduationCap } from "lucide-react";
+import { Settings, Eye, MessageSquare, Newspaper, GraduationCap, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface TopNavigationProps {
   onNewConversation: () => void;
@@ -10,6 +11,15 @@ interface TopNavigationProps {
 }
 
 export const TopNavigation = ({ onNewConversation, onSettingsClick }: TopNavigationProps) => {
+  const { toast } = useToast();
+
+  const handleUserProfileClick = () => {
+    toast({
+      title: "Coming Soon",
+      description: "User profile feature is under development.",
+    });
+  };
+
   return (
     <div className="flex items-center justify-between p-4 border-b border-border/20 bg-background">
       <div className="flex items-center gap-4">
@@ -35,15 +45,26 @@ export const TopNavigation = ({ onNewConversation, onSettingsClick }: TopNavigat
           </Link>
         </div>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onSettingsClick}
-        className="text-muted-foreground hover:text-foreground"
-      >
-        <Settings className="h-4 w-4 mr-2" />
-        Settings
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleUserProfileClick}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <User className="h-4 w-4 mr-2" />
+          Profile
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSettingsClick}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          Settings
+        </Button>
+      </div>
     </div>
   );
 };

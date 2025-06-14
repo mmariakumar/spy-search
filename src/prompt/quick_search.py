@@ -1,14 +1,14 @@
+from string import Template
 import datetime
 
-def quick_search_prompt(query, data):
-    return f"""
+template = Template("""
 # Search Result Summary
-**Timestamp:** {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**Timestamp:** $timestamp
 
 ---
 
 ## User Query
-> {query}
+> $query
 
 ---
 
@@ -16,7 +16,7 @@ def quick_search_prompt(query, data):
 
 Based on the content retrieved, here is the concise and relevant information related to your query:
 
-{data}
+$data
 
 ---
 
@@ -49,4 +49,9 @@ This domain is intended for use in illustrative examples within documents. You m
 ---
 
 Your final response should simulate what a user would see if they searched the query and browsed to the page — concise, relevant, and informative.
-"""
+""")
+
+def quick_search_prompt(query, data, timestamp=None):
+    if timestamp is None:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return template.substitute(timestamp=timestamp, query=query, data=data)

@@ -7,6 +7,7 @@ interface Message {
   type: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  responseTime?: number;
 }
 
 interface UseStreamingChatProps {
@@ -33,6 +34,8 @@ export const useStreamingChat = ({
     files: File[],
     isDeepResearch: boolean
   ) => {
+    const startTime = Date.now();
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -104,10 +107,12 @@ export const useStreamingChat = ({
         }
 
         finalContent = data.report;
+        const responseTime = Date.now() - startTime;
+        
         setMessages(prev => 
           prev.map(msg => 
             msg.id === assistantMessageId 
-              ? { ...msg, content: finalContent }
+              ? { ...msg, content: finalContent, responseTime }
               : msg
           )
         );
@@ -141,6 +146,16 @@ export const useStreamingChat = ({
         }
 
         finalContent = accumulatedContent;
+        const responseTime = Date.now() - startTime;
+        
+        // Update with final response time
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === assistantMessageId 
+              ? { ...msg, content: finalContent, responseTime }
+              : msg
+          )
+        );
       }
 
       // Save complete assistant response
@@ -153,11 +168,12 @@ export const useStreamingChat = ({
 
     } catch (error) {
       const errorMessage = "Sorry, I encountered an error while generating your report. Please try again.";
+      const responseTime = Date.now() - startTime;
       
       setMessages(prev => 
         prev.map(msg => 
           msg.id === assistantMessageId 
-            ? { ...msg, content: errorMessage }
+            ? { ...msg, content: errorMessage, responseTime }
             : msg
         )
       );

@@ -1,8 +1,9 @@
 {
     "provider": "openai",
-    "model": "llama-4-scout-17b-16e-instruct",
+    "model": "llama-3.3-70b",
     "agents": [
-        "reporter"
+        "reporter",
+        "searcher"
     ],
     "db": "./local_files/test",
     "base_url": "https://api.cerebras.ai/v1"
