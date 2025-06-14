@@ -15,6 +15,7 @@ interface UseStreamingChatProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   currentConversationTitle?: string | null;
   onConversationCreated?: (title: string) => void;
+  refreshConversations?: () => Promise<void>;
 }
 
 export const useStreamingChat = ({ 
@@ -22,7 +23,8 @@ export const useStreamingChat = ({
   setMessages, 
   setIsLoading,
   currentConversationTitle,
-  onConversationCreated
+  onConversationCreated,
+  refreshConversations
 }: UseStreamingChatProps) => {
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
 
@@ -50,6 +52,11 @@ export const useStreamingChat = ({
 
     // Save user message immediately
     await conversationManager.saveMessage(conversationTitle, 'user', messageContent);
+    
+    // Refresh conversations after saving user message
+    if (refreshConversations) {
+      await refreshConversations();
+    }
 
     // Create assistant message placeholder for streaming
     const assistantMessageId = (Date.now() + 1).toString();
@@ -76,10 +83,6 @@ export const useStreamingChat = ({
 
       const formData = new FormData();
       formData.append('messages', JSON.stringify(formattedMessages));
-      
-      files.forEach(file => {
-        formData.append('files', file);
-      });
 
       const response = await fetch(`http://localhost:8000/${endpoint}/${encodedQuery}`, {
         method: 'POST',
@@ -142,6 +145,11 @@ export const useStreamingChat = ({
 
       // Save complete assistant response
       await conversationManager.saveMessage(conversationTitle, 'assistant', finalContent);
+      
+      // Refresh conversations after saving assistant message
+      if (refreshConversations) {
+        await refreshConversations();
+      }
 
     } catch (error) {
       const errorMessage = "Sorry, I encountered an error while generating your report. Please try again.";
@@ -156,13 +164,18 @@ export const useStreamingChat = ({
 
       // Save error message
       await conversationManager.saveMessage(conversationTitle, 'assistant', errorMessage);
+      
+      // Refresh conversations after saving error message
+      if (refreshConversations) {
+        await refreshConversations();
+      }
 
       console.error('Streaming error:', error);
     } finally {
       setIsLoading(false);
       setStreamingMessageId(null);
     }
-  }, [messages, setMessages, setIsLoading, currentConversationTitle, onConversationCreated]);
+  }, [messages, setMessages, setIsLoading, currentConversationTitle, onConversationCreated, refreshConversations]);
 
   return {
     sendStreamingMessage,

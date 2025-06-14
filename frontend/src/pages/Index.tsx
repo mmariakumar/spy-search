@@ -1,8 +1,7 @@
-
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { ChatInterface } from "@/components/ChatInterface";
-import { ConversationSidebar } from "@/components/ConversationSidebar";
+import { ConversationSidebar, ConversationSidebarRef } from "@/components/ConversationSidebar";
 import { TopNavigation } from "@/components/layout/TopNavigation";
 import { SettingsPage } from "@/components/layout/SettingsPage";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +20,9 @@ const Index = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [currentConversationTitle, setCurrentConversationTitle] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Reference to the sidebar's refresh function
+  const conversationSidebarRef = useRef<ConversationSidebarRef>(null);
 
   const handleAgentConfigSave = async (config: {
     agents: string[];
@@ -103,6 +105,12 @@ const Index = () => {
     setCurrentConversationTitle(title);
   };
 
+  const refreshConversations = async () => {
+    if (conversationSidebarRef.current) {
+      await conversationSidebarRef.current.refreshConversations();
+    }
+  };
+
   if (showSettings) {
     return (
       <SettingsPage
@@ -117,6 +125,7 @@ const Index = () => {
     <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full bg-background">
         <ConversationSidebar
+          ref={conversationSidebarRef}
           currentConversationTitle={currentConversationTitle}
           onConversationSelect={handleConversationSelect}
           onNewConversation={handleNewConversation}
@@ -138,6 +147,7 @@ const Index = () => {
                 setIsLoading={setIsLoading}
                 currentConversationId={currentConversationTitle}
                 onConversationCreated={handleConversationCreated}
+                refreshConversations={refreshConversations}
               />
             </div>
           </div>

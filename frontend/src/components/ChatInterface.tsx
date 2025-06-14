@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Bot } from "lucide-react";
+import { Bot, Sparkles, TrendingUp, Globe, Cpu, Heart, Bitcoin, Microscope } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageList } from "./chat/MessageList";
 import { ChatInput } from "./chat/ChatInput";
@@ -21,6 +22,7 @@ interface ChatInterfaceProps {
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   currentConversationId?: string | null;
   onConversationCreated?: (title: string) => void;
+  refreshConversations?: () => Promise<void>;
 }
 
 export const ChatInterface = ({ 
@@ -30,16 +32,19 @@ export const ChatInterface = ({
   isLoading, 
   setIsLoading,
   currentConversationId,
-  onConversationCreated 
+  onConversationCreated,
+  refreshConversations
 }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
+  const [searchMode, setSearchMode] = useState(false);
 
   const { sendStreamingMessage, streamingMessageId } = useStreamingChat({
     messages,
     setMessages,
     setIsLoading,
     currentConversationTitle: currentConversationId,
-    onConversationCreated
+    onConversationCreated,
+    refreshConversations
   });
 
   const clearChat = () => {
@@ -51,70 +56,112 @@ export const ChatInterface = ({
     await sendStreamingMessage(messageContent, files, isDeepResearch);
   };
 
+  const handlePromptClick = (promptText: string) => {
+    setInput(promptText);
+    setSearchMode(true);
+  };
+
+  const promptSuggestions = [
+    { text: "search: Latest technology breakthroughs", icon: Cpu },
+    { text: "search: Climate change recent developments", icon: Globe },
+    { text: "search: Stock market analysis today", icon: TrendingUp },
+    { text: "search: AI developments and news", icon: Bot },
+    { text: "search: Space exploration updates", icon: Sparkles },
+    { text: "search: Health and wellness trends", icon: Heart },
+    { text: "search: Cryptocurrency market movements", icon: Bitcoin },
+    { text: "search: Recent scientific discoveries", icon: Microscope }
+  ];
+
   return (
-    <div className="flex flex-col h-full max-w-none mx-auto bg-background">
+    <div className="flex flex-col h-full max-w-none mx-auto bg-gradient-to-br from-gray-50/20 to-white/40 dark:from-gray-900/20 dark:to-gray-800/20">
       {messages.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center px-4">
-          <div className="w-full max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-light text-foreground mb-4">
-                What can I help you with?
-              </h2>
-              <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
-                Ask anything to generate comprehensive intelligence reports
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 overflow-hidden">
+          <div className="w-full max-w-4xl mx-auto text-center">
+            {/* Hero Section */}
+            <div className="mb-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/90 via-blue-500/90 to-purple-500/90 rounded-2xl mb-6 shadow-lg shadow-primary/15">
+                <Sparkles className="h-7 w-7 text-white" />
+              </div>
+              
+              <h1 className="text-4xl font-light text-gray-900 dark:text-white mb-6 tracking-tight leading-tight">
+                What would you like to
+                <span className="block bg-gradient-to-r from-primary/90 via-blue-500/90 to-purple-500/90 bg-clip-text text-transparent font-light">
+                  discover?
+                </span>
+              </h1>
+              
+              <p className="text-lg text-gray-600 dark:text-gray-300 font-light max-w-xl mx-auto leading-relaxed">
+                Generate comprehensive intelligence reports with AI-powered research
               </p>
             </div>
             
-            <div className="mb-8">
+            {/* Chat Input */}
+            <div className="mb-10">
               <ChatInput
                 input={input}
                 setInput={setInput}
                 isLoading={isLoading}
                 agents={agents}
                 onSendMessage={handleSendMessage}
+                searchMode={searchMode}
+                onSearchModeChange={setSearchMode}
               />
             </div>
 
-            <div className="flex flex-wrap gap-3 justify-center max-w-3xl mx-auto">
-              {[
-                "Current Events", 
-                "Parenting", 
-                "Compare", 
-                "Troubleshoot", 
-                "Health"
-              ].map((topic) => (
-                <Button
-                  key={topic}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setInput(`Tell me about ${topic.toLowerCase()}`)}
-                  className="rounded-full border border-border/40 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-                >
-                  {topic}
-                </Button>
-              ))}
+            {/* Prompt Suggestions */}
+            <div className="max-w-4xl mx-auto">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-6 uppercase tracking-wider">
+                Popular Topics
+              </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {promptSuggestions.map((prompt, index) => (
+                  <Button
+                    key={prompt.text}
+                    variant="ghost"
+                    onClick={() => handlePromptClick(prompt.text)}
+                    className="group h-auto p-4 rounded-xl border border-gray-200/40 dark:border-gray-700/40 bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm hover:bg-white/70 dark:hover:bg-gray-800/50 hover:shadow-md hover:scale-[1.01] transition-all duration-200 text-left justify-start"
+                  >
+                    <div className="flex flex-col items-center gap-3 w-full">
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-primary/8 to-blue-500/8 group-hover:from-primary/12 group-hover:to-blue-500/12 transition-all duration-200">
+                        <prompt.icon className="h-4 w-4 text-primary/80 group-hover:scale-105 transition-transform duration-200" />
+                      </div>
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-200 group-hover:text-primary/90 transition-colors leading-relaxed text-center">
+                        {prompt.text.replace('search: ', '')}
+                      </span>
+                    </div>
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-center p-4 border-b border-border/20 bg-background/95 backdrop-blur-sm">
-            <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-primary" />
-              <h2 className="text-base font-medium text-foreground">Intelligence Chat</h2>
+          {/* Chat Header */}
+          <div className="flex justify-between items-center p-4 border-b border-gray-200/30 dark:border-gray-700/30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-primary/90 to-blue-500/90 shadow-md">
+                <Bot className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white">Intelligence Assistant</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">AI-powered research</p>
+              </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={clearChat}
-              className="text-muted-foreground hover:text-foreground text-sm"
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-100/40 dark:hover:bg-gray-800/40"
             >
-              Clear Chat
+              New Chat
             </Button>
           </div>
 
+          {/* Messages and Input */}
           <div className="flex-1 flex flex-col min-h-0">
-            <ScrollArea className="flex-1 px-4 md:px-6">
+            <ScrollArea className="flex-1 px-6">
               <div className="max-w-4xl mx-auto py-6">
                 <MessageList 
                   messages={messages} 
@@ -125,14 +172,16 @@ export const ChatInterface = ({
               </div>
             </ScrollArea>
 
-            <div className="border-t border-border/20 bg-background/98 backdrop-blur-sm">
-              <div className="max-w-4xl mx-auto px-4 md:px-6 py-4">
+            <div className="border-t border-gray-200/30 dark:border-gray-700/30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">
+              <div className="max-w-4xl mx-auto px-6 py-4">
                 <ChatInput
                   input={input}
                   setInput={setInput}
                   isLoading={isLoading}
                   agents={agents}
                   onSendMessage={handleSendMessage}
+                  searchMode={searchMode}
+                  onSearchModeChange={setSearchMode}
                 />
               </div>
             </div>

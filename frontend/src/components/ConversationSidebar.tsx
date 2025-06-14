@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -29,33 +29,34 @@ interface ConversationSidebarProps {
   onNewConversation: () => void;
 }
 
-export const ConversationSidebar = ({ 
+export interface ConversationSidebarRef {
+  refreshConversations: () => Promise<void>;
+}
+
+export const ConversationSidebar = forwardRef<ConversationSidebarRef, ConversationSidebarProps>(({ 
   currentConversationTitle, 
   onConversationSelect, 
   onNewConversation
-}: ConversationSidebarProps) => {
+}, ref) => {
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const { toast } = useToast();
 
-  // Load conversations from backend on mount
-  useEffect(() => {
-    loadConversations();
-  }, []);
-
   const loadConversations = async () => {
     try {
-      const savedTitles = localStorage.getItem('conversation-titles');
-      if (savedTitles) {
-        const titles = JSON.parse(savedTitles);
+      const response = await fetch('http://localhost:8000/get_titles');
+      if (response.ok) {
+        const data = await response.json();
+        const titles = data.titles || [];
+        
         const conversationPromises = titles.map(async (title: string) => {
           try {
-            const response = await fetch('http://localhost:8000/load_message', {
+            const messageResponse = await fetch('http://localhost:8000/load_message', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ title }),
             });
-            if (response.ok) {
-              const messages = await response.json();
+            if (messageResponse.ok) {
+              const messages = await messageResponse.json();
               return {
                 title,
                 messages: messages.map((msg: any, index: number) => ({
@@ -80,6 +81,16 @@ export const ConversationSidebar = ({
     }
   };
 
+  // Expose refreshConversations function via ref
+  useImperativeHandle(ref, () => ({
+    refreshConversations: loadConversations
+  }));
+
+  // Load conversations on mount
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
   const deleteConversation = async (title: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
@@ -90,15 +101,8 @@ export const ConversationSidebar = ({
       });
       
       if (response.ok) {
-        setConversations(prev => prev.filter(conv => conv.title !== title));
-        
-        // Update local titles list
-        const savedTitles = localStorage.getItem('conversation-titles');
-        if (savedTitles) {
-          const titles = JSON.parse(savedTitles);
-          const updatedTitles = titles.filter((t: string) => t !== title);
-          localStorage.setItem('conversation-titles', JSON.stringify(updatedTitles));
-        }
+        // Force refresh conversations after delete
+        await loadConversations();
         
         if (currentConversationTitle === title) {
           onNewConversation();
@@ -161,7 +165,9 @@ export const ConversationSidebar = ({
       </SidebarContent>
     </Sidebar>
   );
-};
+});
+
+ConversationSidebar.displayName = "ConversationSidebar";
 
 // Export conversation manager functions
 export const conversationManager = {
@@ -181,14 +187,6 @@ export const conversationManager = {
       
       if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
-      }
-      
-      // Update local titles list
-      const savedTitles = localStorage.getItem('conversation-titles');
-      const titles = savedTitles ? JSON.parse(savedTitles) : [];
-      if (!titles.includes(title)) {
-        titles.unshift(title);
-        localStorage.setItem('conversation-titles', JSON.stringify(titles));
       }
       
       return true;

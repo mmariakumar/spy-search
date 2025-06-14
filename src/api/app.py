@@ -3,6 +3,8 @@ from fastapi.responses import FileResponse, StreamingResponse
 import json
 import os
 import logging
+import re
+from collections import Counter
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +20,7 @@ from .models.models import (
 )
 
 from .controller.files import extract_text_from_pdf_bytes
+from .controller.extraction import extract_keywords , smart_message_processing
 
 from ..main import generate_report
 
@@ -307,74 +310,77 @@ async def stream_data(
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
 ):
-    # Ultra-fast JSON parsing with optimized error handling
     try:
         messages_list = json.loads(messages)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON in messages field")
     
-    # Batch validation with list comprehension (faster than loop)
     validated_messages = [Message(**msg) for msg in messages_list]
-    user_queries = [msg.content for msg in validated_messages if msg.role == 'user']
-    combined_query = " ".join(user_queries)
-    logger.info(validated_messages)
     
-    # Parallel execution: Start config reading and model creation simultaneously
+    # Concurrent tasks setup
     config_task = asyncio.create_task(asyncio.to_thread(read_config))
     
-    # Pre-initialize search while config loads
-    search_instance = DuckSearch()
-    search_task = asyncio.create_task(asyncio.to_thread(search_instance.search_result, combined_query))
+    flag = False 
+    if "search:" in query:
+        flag = True 
+        
+        # SMART PROCESSING: Focus on current query, light context
+        current_query, context = smart_message_processing(validated_messages)
+        
+        # Extract keywords with current query priority
+        search_keywords = extract_keywords(
+            current_query, 
+            max_keywords=6, 
+            previous_context=context,
+            context_weight=0.2  # Low weight for context
+        )
+        
+        search_instance = DuckSearch()
+        search_task = asyncio.create_task(asyncio.to_thread(search_instance.search_result, search_keywords))
     
-    logger.info("creating model")
+    logger.info("Creating model")
     
-    # Wait for config and create model
     config = await config_task
-    
-    # Use thread pool for CPU-bound model creation
     quick_model: Model = await asyncio.to_thread(Factory.get_model, config["provider"], config["model"])
+    logger.info("Finished creating model")
     
-    logger.info("finish creating model")
-    
-    # Optimized message handling with direct assignment
     quick_model.messages = [] if len(validated_messages) == 1 else validated_messages[:-1]
     
-    # Get search results (should be ready by now)
-    search_result = await search_task
+    if flag:
+        search_result = await search_task
+        prompt = await asyncio.to_thread(quick_search_prompt, query, search_result)
+    else:
+        prompt = query 
     
-    logger.info("start slicing")
-    # Removed the slicing as it was commented out for performance
-    logger.info("stpo slicing")
+    logger.info("Finished Prompt preparation, starting completion stream")
     
-    # Use thread pool for prompt generation to avoid blocking
-    prompt = await asyncio.to_thread(quick_search_prompt, query, search_result)
-    
-    logger.info("Finish Prompt and start completion stream")
-    
-    # Ultra-optimized streaming with batched yields
-    chunk_buffer = []
-    buffer_size = 3  # Batch 3 chunks for efficiency
-    
-    # Use thread pool for completion stream to prevent blocking
-    completion_stream = await asyncio.to_thread(lambda: quick_model.completion_stream(prompt))
-    
-    for chunk in completion_stream:
-        chunk_buffer.append(chunk)
+    try:
+        completion_stream = quick_model.completion_stream(prompt)
         
-        # Yield in batches for better performance
-        if len(chunk_buffer) >= buffer_size:
-            for buffered_chunk in chunk_buffer:
-                yield buffered_chunk
-            chunk_buffer.clear()
+        chunk_count = 0
+        seen_content = set()
         
-        # Micro-sleep for context switching (more efficient than asyncio.sleep(0))
-        await asyncio.sleep(0.001)
+        for chunk in completion_stream:
+            if chunk and chunk.strip():
+                chunk_hash = hash(chunk.strip())
+                if chunk_hash not in seen_content:
+                    seen_content.add(chunk_hash)
+                    chunk_count += 1
+                    yield chunk
+                    await asyncio.sleep(0)
+        
+        if chunk_count == 0:
+            logger.warning("No chunks received from model")
+            yield "No response generated"
+        
+    except Exception as e:
+        logger.error(f"Error in streaming: {str(e)}")
+        yield f"Error: {str(e)}"
     
-    # Yield remaining chunks
-    for remaining_chunk in chunk_buffer:
-        yield remaining_chunk
+    finally:
+        logger.info("Streaming completed")
 
-
+    
 @router.post("/stream_completion/{query}")
 async def stream_response(
     query: str,
