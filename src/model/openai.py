@@ -57,25 +57,20 @@ class OpenAI(Model):
             )
 
             buffer = []
-            buffer_size = 6  
+            buffer_size = 3  # smaller buffer for faster yield
 
             for event in stream:
-                # Defensive check for choices
                 if not event.choices:
                     continue
 
                 choice = event.choices[0]
-                delta = choice.delta
 
-                # Check if finish_reason is set, meaning response is complete
                 if hasattr(choice, "finish_reason") and choice.finish_reason:
-                    # Flush buffer before breaking
                     if buffer:
                         yield "".join(buffer)
                     break
 
-                # Use getattr to get content safely
-                content = getattr(delta, "content", None)
+                content = getattr(choice.delta, "content", None)
                 if content:
                     buffer.append(content)
 
@@ -83,7 +78,6 @@ class OpenAI(Model):
                         yield "".join(buffer)
                         buffer = []
 
-            # Flush any remaining buffer
             if buffer:
                 yield "".join(buffer)
 
@@ -107,4 +101,7 @@ class OpenAI(Model):
         self.messages = []
 
     def _add_message(self, message, role="user"):
-        self.messages.append({"role": "user", "content": message})
+        max_history = 20
+        self.messages.append({"role": role, "content": message})
+        if len(self.messages) > max_history:
+            self.messages = self.messages[-max_history:]

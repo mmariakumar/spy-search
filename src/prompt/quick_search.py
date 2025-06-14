@@ -1,45 +1,57 @@
+from string import Template
 import datetime
 
+template = Template("""
+# Search Result Summary
+**Timestamp:** $timestamp
 
-def quick_search_prompt(query, data):
-    return f"""
-    ## Timestamp
-    {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+---
 
-    ## Task
+## User Query
+> $query
 
-    Respond to the following question:
-    > {query}
+---
 
-    ## Reference Material
+## Browser-Simulated Response
 
-    The following information has been retrieved for your use:
-    {data}
+Based on the content retrieved, here is the concise and relevant information related to your query:
 
-    ## Instructions
+$data
 
-    1. **Assess Relevance**: Review the reference material and disregard any irrelevant data.
-    2. **Integrate Thoughtfully**: Use only relevant and accurate data to support your response.
-    3. **Use APA-style Inline Citations**:
-       - Format citations as clickable Markdown links inside parentheses.
-       - Correct: (Author, 20xx) [Source Title](https://example.com)
-       - Incorrect: [(Author, 20xx) Source Title][https://example.com]
-    4. **Formatting Requirements**:
-       - Use `#` for the main title
-       - Use `##` for section headings
-       - Apply standard Markdown for clarity (lists, bold, etc.)
-    5. **Be Concise and Professional**:
-       - Avoid unnecessary filler or unrelated content.
-       - Present information clearly and with a professional tone.
-    6. **Use Tables If Appropriate**: Include tables only when they enhance clarity or comprehension.
-    7. **Length Guidelines**:
-       - Trivial questions: ~50-100 words
-       - Simple questions: ~200-400 words
-       - Complex questions: ~400-600 words
-    8. **Steps for complex**
-       - Summary with links 
-       - More deatils infomation 
-       - write like professional
+---
 
-    Ensure the final response is informative, well-structured, and easy to read.
-    """
+## Instructions for Response
+
+1. **Act as a Browser**: Provide a direct, clear summary or answer as if presenting a webpage snippet or search preview.
+2. **Relevance is Key**: Use only relevant information from the retrieved content to answer the query.
+3. **Professional & Concise**: Write in a clear, professional tone with no unnecessary filler.
+4. **Use APA-style Inline Citations**, formatted as clickable Markdown links:
+   - Correct: (Author, Year) [Source Title](https://example.com)
+5. **Formatting**:
+   - Use Markdown headers (#, ##) for structure.
+   - Use lists or tables only if they improve clarity.
+6. **Length Guidance**:
+   - Keep answers brief for trivial/simple queries (~50-400 words).
+   - Expand only if the query demands complex explanation (~400-600 words).
+7. **Output Style**:
+   - Summarize first.
+   - Then provide more detailed information if needed.
+   - Maintain a professional, user-friendly tone throughout.
+
+---
+
+**Example Output**:
+
+# Example Domain Summary
+
+This domain is intended for use in illustrative examples within documents. You may use it freely without prior permission or coordination (Example Domain, n.d.) [Example Domain](https://example.com).
+
+---
+
+Your final response should simulate what a user would see if they searched the query and browsed to the page — concise, relevant, and informative.
+""")
+
+def quick_search_prompt(query, data, timestamp=None):
+    if timestamp is None:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return template.substitute(timestamp=timestamp, query=query, data=data)

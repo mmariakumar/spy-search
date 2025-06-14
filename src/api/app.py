@@ -3,6 +3,8 @@ from fastapi.responses import FileResponse, StreamingResponse
 import json
 import os
 import logging
+import re
+from collections import Counter
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +20,7 @@ from .models.models import (
 )
 
 from .controller.files import extract_text_from_pdf_bytes
+from .controller.extraction import extract_keywords , smart_message_processing
 
 from ..main import generate_report
 
@@ -300,6 +303,32 @@ async def quick_response_endpoint(
         "messages_received": [msg.model_dump() for msg in validated_messages],
     }
 
+# Global model cache to avoid 7+ second model loading
+_model_cache = {}
+_config_cache = None
+_cache_lock = asyncio.Lock()
+
+async def get_or_create_model():
+    """Get cached model or create new one. Eliminates 7+ second model loading delay."""
+    global _model_cache, _config_cache, _cache_lock
+    
+    async with _cache_lock:
+        # Load config once and cache it
+        if _config_cache is None:
+            _config_cache = await asyncio.to_thread(read_config)
+        
+        # Create cache key
+        cache_key = f"{_config_cache['provider']}_{_config_cache['model']}"
+        
+        # Return cached model if exists
+        if cache_key in _model_cache:
+            return _model_cache[cache_key]
+        
+        # Create new model and cache it
+        model = await asyncio.to_thread(Factory.get_model, _config_cache["provider"], _config_cache["model"])
+        _model_cache[cache_key] = model
+        
+        return model
 
 async def stream_data(
     query: str,
@@ -307,74 +336,115 @@ async def stream_data(
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
 ):
-    # Ultra-fast JSON parsing with optimized error handling
+    logger.info("start the stream ...")
+    
+    # Parse messages immediately (fast)
     try:
-        messages_list = json.loads(messages)
+        validated_messages = [Message(**msg) for msg in json.loads(messages)]
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON in messages field")
     
-    # Batch validation with list comprehension (faster than loop)
-    validated_messages = [Message(**msg) for msg in messages_list]
-    user_queries = [msg.content for msg in validated_messages if msg.role == 'user']
-    combined_query = " ".join(user_queries)
-    logger.info(validated_messages)
+    needs_search = "search:" in query
     
-    # Parallel execution: Start config reading and model creation simultaneously
-    config_task = asyncio.create_task(asyncio.to_thread(read_config))
+    # Start all operations concurrently - NO WAITING
+    tasks = []
     
-    # Pre-initialize search while config loads
-    search_instance = DuckSearch()
-    search_task = asyncio.create_task(asyncio.to_thread(search_instance.search_result, combined_query))
+    # 1. Get model (from cache if available, eliminates 7s delay)
+    model_task = asyncio.create_task(get_or_create_model())
     
-    logger.info("creating model")
-    
-    # Wait for config and create model
-    config = await config_task
-    
-    # Use thread pool for CPU-bound model creation
-    quick_model: Model = await asyncio.to_thread(Factory.get_model, config["provider"], config["model"])
-    
-    logger.info("finish creating model")
-    
-    # Optimized message handling with direct assignment
-    quick_model.messages = [] if len(validated_messages) == 1 else validated_messages[:-1]
-    
-    # Get search results (should be ready by now)
-    search_result = await search_task
-    
-    logger.info("start slicing")
-    # Removed the slicing as it was commented out for performance
-    logger.info("stpo slicing")
-    
-    # Use thread pool for prompt generation to avoid blocking
-    prompt = await asyncio.to_thread(quick_search_prompt, query, search_result)
-    
-    logger.info("Finish Prompt and start completion stream")
-    
-    # Ultra-optimized streaming with batched yields
-    chunk_buffer = []
-    buffer_size = 3  # Batch 3 chunks for efficiency
-    
-    # Use thread pool for completion stream to prevent blocking
-    completion_stream = await asyncio.to_thread(lambda: quick_model.completion_stream(prompt))
-    
-    for chunk in completion_stream:
-        chunk_buffer.append(chunk)
+    # 2. If search needed, start search pipeline
+    if needs_search:
+        # Start search operations immediately
+        async def search_pipeline():
+            """
+            current_query, context = smart_message_processing(validated_messages)
+            search_keywords = await asyncio.to_thread(
+                extract_keywords,
+                current_query, 
+                max_keywords=6, 
+                previous_context=context,
+                context_weight=0.2
+            )
+            """
+            search_instance = DuckSearch()
+            return await asyncio.to_thread(search_instance.search_result, query)
         
-        # Yield in batches for better performance
-        if len(chunk_buffer) >= buffer_size:
-            for buffered_chunk in chunk_buffer:
-                yield buffered_chunk
-            chunk_buffer.clear()
-        
-        # Micro-sleep for context switching (more efficient than asyncio.sleep(0))
-        await asyncio.sleep(0.001)
+        search_task = asyncio.create_task(search_pipeline())
+        tasks = [model_task, search_task]
+    else:
+        tasks = [model_task]
     
-    # Yield remaining chunks
-    for remaining_chunk in chunk_buffer:
-        yield remaining_chunk
+    logger.info("Creating model")  # Keep your original log message
+    
+    # Wait for completion
+    if needs_search:
+        model, search_result = await asyncio.gather(*tasks)
+        logger.info("Finished creating model")  # Keep your original log message
+        prompt = await asyncio.to_thread(quick_search_prompt, query, search_result)
+    else:
+        model = await model_task
+        logger.info("Finished creating model")  # Keep your original log message
+        prompt = query
+    
+    # Configure model (keep your original logic)
+    model.messages = [] if len(validated_messages) == 1 else validated_messages[:-1]
+    
+    logger.info("Finished Prompt preparation, starting completion stream")  # Keep your original log
+    
+    try:
+        completion_stream = model.completion_stream(prompt)
+        
+        chunk_count = 0
+        seen_content = set()
+        
+        for chunk in completion_stream:  # Fixed: use regular for, not async for
+            if chunk and chunk.strip():
+                chunk_hash = hash(chunk.strip())
+                if chunk_hash not in seen_content:
+                    seen_content.add(chunk_hash)
+                    chunk_count += 1
+                    yield chunk
+                    await asyncio.sleep(0)
+        
+        if chunk_count == 0:
+            logger.warning("No chunks received from model")
+            yield "No response generated"
+        
+    except Exception as e:
+        logger.error(f"Error in streaming: {str(e)}")
+        yield f"Error: {str(e)}"
+    
+    finally:
+        logger.info("Streaming completed")  # Keep your original log
+    
+    logger.info("finish the stream")  # Keep your original log
 
+# Add this to your app startup to preload models
+async def preload_models():
+    """Call this at application startup to preload models"""
+    logger.info("Preloading models...")
+    try:
+        await get_or_create_model()
+        logger.info("Models preloaded successfully")
+    except Exception as e:
+        logger.error(f"Failed to preload models: {e}")
 
+# Alternative version with even more aggressive caching
+class QuickModel:
+    _instance = None
+    _model = None
+    _config = None
+    
+    @classmethod
+    async def get_model(cls):
+        if cls._model is None:
+            if cls._config is None:
+                cls._config = await asyncio.to_thread(read_config)
+            cls._model = await asyncio.to_thread(Factory.get_model, cls._config["provider"], cls._config["model"])
+        return cls._model
+
+# If you want even faster performance, replace get_or_create_model() with QuickModel.get_model() in your stream_data function
+    
 @router.post("/stream_completion/{query}")
 async def stream_response(
     query: str,
