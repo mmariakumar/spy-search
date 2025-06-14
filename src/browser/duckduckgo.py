@@ -2,7 +2,6 @@ import asyncio
 import aiohttp
 from html import unescape
 from langchain_community.tools import DuckDuckGoSearchResults
-from bs4 import BeautifulSoup
 import logging
 from typing import List, Dict, Optional, Set, Tuple
 import time
@@ -11,14 +10,11 @@ import re
 from urllib.parse import urlparse
 import threading
 import concurrent.futures
-from collections import deque
-import weakref
+from collections import deque # Kept for general utility, but _session_pool is removed
 import gc
-import orjson  # Ultra-fast JSON if available
-from selectolax.parser import HTMLParser  # Ultra-fast HTML parser
+from selectolax.parser import HTMLParser
 
 logger = logging.getLogger(__name__)
-
 
 class DuckSearch:
     def __init__(self):
@@ -29,26 +25,6 @@ class DuckSearch:
             backend="news", output_format="list", num_results=8
         )
         
-        # Hyper-aggressive session management
-        self._session_pool: deque = deque(maxlen=20)
-        self._session_lock = threading.Lock()
-        self._failed_urls: Set[str] = set()
-        self._content_cache: Dict[str, str] = {}
-        self._url_cache: Dict[str, bool] = {}
-        
-        # Pre-compiled regex patterns (compiled once, reused millions of times)
-        self._text_cleanup = re.compile(r'\s+')
-        self._html_tags = re.compile(r'<[^>]+>')
-        self._extract_paragraphs = re.compile(r'<p[^>]*>(.*?)</p>', re.IGNORECASE | re.DOTALL)
-        
-        # Background session warmup and preloading
-        self._warmup_done = False
-        self._background_executor = concurrent.futures.ThreadPoolExecutor(
-            max_workers=4, thread_name_prefix="bg-duck"
-        )
-        self._start_background_warmup()
-        
-        # Ultra-aggressive connection settings
         self._connector_config = {
             'limit': 300,
             'limit_per_host': 100,
@@ -60,46 +36,98 @@ class DuckSearch:
             'ssl': False,
         }
         
-        # Lightning timeout settings
         self._timeout_config = aiohttp.ClientTimeout(
-            total=0.8,      # Reduced from 1.25
-            connect=0.2,    # Reduced from 0.5  
-            sock_read=0.6   # Reduced from 0.9
+            total=0.8,
+            connect=0.2,
+            sock_read=0.6
         )
 
-    def _start_background_warmup(self):
-        """Pre-warm connections in background"""
-        def warmup():
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(self._warmup_sessions())
-                self._warmup_done = True
-            except Exception as e:
-                logger.debug(f"Warmup error: {e}")
-            finally:
-                loop.close()
+        # threading.local() will store a unique TCPConnector instance per thread
+        self._thread_local_connector = threading.local() 
+
+        # Removed: self._session_pool and self._session_lock
+        # Sessions will now be managed per deep search/warmup execution.
+
+        self._failed_urls: Set[str] = set()
+        self._content_cache: Dict[str, str] = {}
+        self._url_cache: Dict[str, bool] = {}
         
-        self._background_executor.submit(warmup)
+        self._text_cleanup = re.compile(r'\s+')
+        self._html_tags = re.compile(r'<[^>]+>')
+        self._extract_paragraphs = re.compile(r'<p[^>]*>(.*?)</p>', re.IGNORECASE | re.DOTALL)
+        
+        self._warmup_done = False
+        self._background_executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=4, thread_name_prefix="bg-duck"
+        )
+        self._sync_executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="sync-async-bridge"
+        )
+
+        self._start_background_warmup()
+
+    def _start_background_warmup(self):
+        """Submits a warmup task to the background executor."""
+        def warmup_task_wrapper():
+            # This function runs in a new thread.
+            # asyncio.run handles loop creation, setting, running, and closing.
+            try:
+                # _warmup_sessions will now create and close its own thread-local connector and session
+                asyncio.run(self._warmup_sessions())
+            except Exception as e:
+                logger.debug(f"Warmup task error: {e}")
+            finally:
+                # Cleanup thread-local storage key for the connector (it should already be closed)
+                if hasattr(self._thread_local_connector, 'conn'):
+                    del self._thread_local_connector.conn
+                    logger.debug(f"Cleaned up thread-local connector storage in background warmup thread {threading.current_thread().name}")
+        
+        self._background_executor.submit(warmup_task_wrapper)
 
     async def _warmup_sessions(self):
-        """Pre-create optimized sessions"""
-        tasks = []
-        for _ in range(15):  # Pre-create more sessions
-            tasks.append(self._create_optimized_session())
-        
-        sessions = await asyncio.gather(*tasks, return_exceptions=True)
-        valid_sessions = [s for s in sessions if isinstance(s, aiohttp.ClientSession)]
-        
-        with self._session_lock:
-            self._session_pool.extend(valid_sessions)
+        """Pre-create optimized sessions. Runs in an asyncio loop in a worker thread."""
+        # This must be the first thing to happen within this async function,
+        # ensuring the connector is created within the active event loop of THIS thread.
+        if not hasattr(self._thread_local_connector, 'conn') or self._thread_local_connector.conn.closed:
+            self._thread_local_connector.conn = aiohttp.TCPConnector(**self._connector_config)
+            logger.debug(f"Created new TCPConnector for thread {threading.current_thread().name} (warmup)")
+
+        session: Optional[aiohttp.ClientSession] = None
+        try:
+            session = await self._create_optimized_session() # Create a session for this warmup task
+            
+            # Perform a few dummy requests to warm up the connections
+            # Using try-except for dummy requests to not fail the whole warmup on one issue
+            dummy_urls = ["http://example.com", "http://google.com"]
+            for url in dummy_urls:
+                try:
+                    async with session.get(url, timeout=0.5) as resp:
+                        await resp.read() # Read content to ensure connection is fully used
+                        logger.debug(f"Warmup successful for {url} with status {resp.status}")
+                except (asyncio.TimeoutError, aiohttp.ClientError, Exception) as e:
+                    logger.debug(f"Warmup failed for {url}: {e}")
+
+            self._warmup_done = True
+            logger.debug(f"Warmed up connections in background thread {threading.current_thread().name}.")
+        finally:
+            # Ensure the session and thread-local connector are closed
+            if session and not session.closed:
+                await session.close()
+                logger.debug(f"Closed warmup ClientSession in thread {threading.current_thread().name}")
+            if hasattr(self._thread_local_connector, 'conn') and not self._thread_local_connector.conn.closed:
+                await self._thread_local_connector.conn.close()
+                logger.debug(f"Closed TCPConnector in warmup task for thread {threading.current_thread().name}")
 
     async def _create_optimized_session(self) -> aiohttp.ClientSession:
-        """Create ultra-optimized session"""
-        connector = aiohttp.TCPConnector(**self._connector_config)
+        """Creates and returns a new aiohttp.ClientSession instance.
+        It assumes _thread_local_connector.conn has been initialized by the calling async context."""
         
+        if not hasattr(self._thread_local_connector, 'conn') or self._thread_local_connector.conn.closed:
+            logger.error("Thread-local TCPConnector not found or closed. Re-creating for safety. (This indicates an unexpected state)")
+            self._thread_local_connector.conn = aiohttp.TCPConnector(**self._connector_config)
+            
         session = aiohttp.ClientSession(
-            connector=connector,
+            connector=self._thread_local_connector.conn,
             timeout=self._timeout_config,
             headers={
                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
@@ -108,28 +136,17 @@ class DuckSearch:
                 "Connection": "keep-alive",
                 "DNT": "1",
             },
-            read_bufsize=32768,  # Larger buffer for better throughput
+            read_bufsize=32768,
             skip_auto_headers={"User-Agent"},
-            connector_owner=False,  # Don't auto-close connector
+            connector_owner=False, # DuckSearch (or the thread's lifecycle) is responsible for closing the connector
         )
         return session
 
-    def _get_session_fast(self) -> aiohttp.ClientSession:
-        """Ultra-fast session retrieval with fallback"""
-        with self._session_lock:
-            if self._session_pool:
-                session = self._session_pool.popleft()
-                # Immediately put it back for reuse
-                self._session_pool.append(session)
-                return session
-        
-        # Emergency fallback - create session synchronously
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self._create_optimized_session())
+    # Removed _get_session_fast as sessions are now passed explicitly or created per context
 
     @lru_cache(maxsize=2000)
     def _is_valid_url_cached(self, url: str) -> bool:
-        """Cached URL validation"""
+        """Cached URL validation using urlparse."""
         if url in self._url_cache:
             return self._url_cache[url]
         
@@ -142,12 +159,11 @@ class DuckSearch:
             self._url_cache[url] = False
             return False
 
-    async def _extract_content_blazing(self, url: str, limit: int = 350) -> str:
-        """Blazing fast content extraction with all optimizations"""
+    async def _extract_content_blazing(self, session: aiohttp.ClientSession, url: str, limit: int = 300) -> str:
+        """Blazing fast content extraction with all optimizations."""
         if not url or url in self._failed_urls:
             return ""
         
-        # Memory cache check
         if url in self._content_cache:
             return self._content_cache[url]
             
@@ -155,225 +171,256 @@ class DuckSearch:
             self._failed_urls.add(url)
             return ""
         
-        session = self._get_session_fast()
-        
         try:
-            # Skip HEAD request - go straight to GET for speed
             async with session.get(url, allow_redirects=False) as response:
                 if response.status not in (200, 301, 302):
                     self._failed_urls.add(url)
+                    logger.debug(f"Failed status for {url}: {response.status}")
                     return ""
                 
-                # Handle redirects manually for speed
                 if response.status in (301, 302):
                     redirect_url = response.headers.get('Location')
-                    if redirect_url and len(redirect_url) < 200:  # Avoid redirect loops
-                        return await self._extract_content_blazing(redirect_url, limit)
+                    if redirect_url and len(redirect_url) < 200:
+                        logger.debug(f"Redirecting {url} to {redirect_url}")
+                        return await self._extract_content_blazing(session, redirect_url, limit) # Pass session recursively
+                    else:
+                        self._failed_urls.add(url)
+                        return ""
                 
-                # Lightning-fast chunked reading
-                content = b""
+                content_bytes = b""
                 async for chunk in response.content.iter_chunked(16384):
-                    content += chunk
-                    if len(content) > 40000:  # Stop early
+                    content_bytes += chunk
+                    if len(content_bytes) > 40000:
                         break
             
-            # Ultra-fast parsing with selectolax (much faster than BeautifulSoup)
+            content_str = content_bytes.decode('utf-8', errors='replace') 
+            
+            texts = []
+            full_text_so_far = ""
+
             try:
-                tree = HTMLParser(content)
-                # Get paragraphs using CSS selector (fastest method)
+                tree = HTMLParser(content_str)
                 paragraphs = tree.css('p')
-                texts = []
+                
                 for i, node in enumerate(paragraphs):
-                    if i >= 25:  # Limit iterations
+                    if i >= 25:
                         break
-                    text = node.text()
-                    if text and len(text) > 20:  # Only meaningful text
+                    text = node.text(strip=True)
+                    if text and len(text) > 20:
                         texts.append(text)
-                        if len(' '.join(texts)) > limit:  # Early exit
+                        full_text_so_far = " ".join(texts)
+                        if len(full_text_so_far) > limit * 1.2:
                             break
                             
-            except Exception:
-                # Ultra-fast regex fallback (faster than BeautifulSoup)
-                content_str = content.decode('utf-8', errors='ignore')
+            except Exception as e:
+                logger.debug(f"Selectolax failed for {url}: {e}. Falling back to regex.")
                 matches = self._extract_paragraphs.findall(content_str)
-                texts = [self._html_tags.sub('', match).strip() for match in matches[:25]]
-                texts = [t for t in texts if len(t) > 20]
+                texts = []
+                for match in matches[:25]:
+                    text = self._html_tags.sub('', match).strip()
+                    if text and len(text) > 20:
+                        texts.append(text)
+                        full_text_so_far = " ".join(texts)
+                        if len(full_text_so_far) > limit * 1.2:
+                            break
             
             if not texts:
                 self._failed_urls.add(url)
                 return ""
             
-            # Lightning text processing
-            full_text = " ".join(texts)
-            full_text = self._text_cleanup.sub(' ', unescape(full_text))
-            full_text = full_text[:limit].strip()
+            final_text = self._text_cleanup.sub(' ', unescape(full_text_so_far)).strip()
+            final_text = final_text[:limit]
             
-            # Cache with memory management
             if len(self._content_cache) > 500:
-                # Remove oldest 100 entries
                 old_keys = list(self._content_cache.keys())[:100]
                 for key in old_keys:
                     del self._content_cache[key]
             
-            self._content_cache[url] = full_text
-            return full_text
+            self._content_cache[url] = final_text
+            return final_text
 
-        except (asyncio.TimeoutError, aiohttp.ClientError):
+        except (asyncio.TimeoutError, aiohttp.ClientError) as e:
             self._failed_urls.add(url)
+            logger.debug(f"Client error/timeout for {url}: {e}")
             return ""
-        except Exception:
+        except Exception as e:
             self._failed_urls.add(url)
+            logger.error(f"Unexpected error extracting content from {url}: {e}")
             return ""
 
-    async def _process_result_blazing(self, result: Dict) -> Dict:
-        """Lightning result processing"""
+    async def _process_result_blazing(self, session: aiohttp.ClientSession, result: Dict) -> Dict:
+        """Lightning result processing - adds full_content to a search result."""
         url = result.get("link")
         if not url or url in self._failed_urls:
             result["full_content"] = ""
             return result
             
-        content = await self._extract_content_blazing(url)
+        content = await self._extract_content_blazing(session, url) # Pass session
         result["full_content"] = content
         return result
 
     async def _deep_search_blazing(self, results: List[Dict], k: int) -> List[Dict]:
-        """Blazing fast deep search with maximum concurrency"""
-        if not results:
-            return []
-        
-        # Extreme concurrency with intelligent resource management
-        max_concurrent = min(k * 6, 150)  # Even more aggressive
-        semaphore = asyncio.Semaphore(max_concurrent)
-        
-        async def process_with_semaphore(result):
-            async with semaphore:
-                return await self._process_result_blazing(result)
-        
-        # Pre-filter and prepare results
-        valid_results = []
-        tasks = []
-        
-        for result in results[:k]:
-            url = result.get("link", "")
-            if url and url not in self._failed_urls and self._is_valid_url_cached(url):
-                task = asyncio.create_task(process_with_semaphore(result))
-                tasks.append(task)
-                valid_results.append(result)
-            else:
-                result["full_content"] = ""
-                valid_results.append(result)
-                # Create dummy completed task
-                dummy_task = asyncio.create_task(asyncio.sleep(0))
-                dummy_task.set_result(result)
-                tasks.append(dummy_task)
-        
-        if not tasks:
-            return results[:k]
-        
+        """Blazing fast deep search with maximum concurrency.
+        Runs in an asyncio loop in a worker thread, creates its own session."""
+        # Ensure a TCPConnector instance exists and is open for the CURRENT thread's event loop.
+        if not hasattr(self._thread_local_connector, 'conn') or self._thread_local_connector.conn.closed:
+            self._thread_local_connector.conn = aiohttp.TCPConnector(**self._connector_config)
+            logger.debug(f"Created new TCPConnector for thread {threading.current_thread().name} (deep search)")
+
+        session: Optional[aiohttp.ClientSession] = None
         try:
-            # Ultra-aggressive timeout
+            session = await self._create_optimized_session() # Create a dedicated session for this deep search run
+            
+            if not results:
+                return []
+            
+            max_concurrent = min(k * 8, 200)
+            semaphore = asyncio.Semaphore(max_concurrent)
+            
+            async def process_with_semaphore(result_item):
+                async with semaphore:
+                    # Pass the session down to the processing function
+                    return await self._process_result_blazing(session, result_item)
+            
+            tasks = []
+            initial_results_copy = results[:k] 
+            
+            for result in initial_results_copy:
+                url = result.get("link", "")
+                if url and url not in self._failed_urls and self._is_valid_url_cached(url):
+                    task = asyncio.create_task(process_with_semaphore(result))
+                    tasks.append(task)
+                else:
+                    result["full_content"] = ""
+                    dummy_task = asyncio.create_task(asyncio.sleep(0)) 
+                    dummy_task.set_result(result)
+                    tasks.append(dummy_task)
+            
+            if not tasks:
+                return initial_results_copy
+            
             start_time = time.time()
-            completed = await asyncio.wait_for(
+            completed_results = await asyncio.wait_for(
                 asyncio.gather(*tasks, return_exceptions=True),
-                timeout=0.9  # Reduced from 1.2
+                timeout=0.9
             )
             
             processing_time = time.time() - start_time
-            logger.debug(f"Blazing search: {processing_time:.3f}s")
+            logger.debug(f"Blazing deep search completed in {processing_time:.3f}s for {len(completed_results)} results.")
             
-            # Fast result processing
             final_results = []
-            for i, result in enumerate(completed):
-                if isinstance(result, Exception):
-                    original = valid_results[i] if i < len(valid_results) else results[i]
-                    original["full_content"] = ""
-                    final_results.append(original)
+            for i, result_or_exc in enumerate(completed_results):
+                if isinstance(result_or_exc, Exception):
+                    original_result = initial_results_copy[i] 
+                    original_result["full_content"] = ""
+                    final_results.append(original_result)
+                    logger.debug(f"Task for {original_result.get('link')} failed: {result_or_exc}")
                 else:
-                    final_results.append(result)
+                    final_results.append(result_or_exc)
             
             return final_results[:k]
             
         except asyncio.TimeoutError:
-            # Instant task cancellation
-            cancelled = 0
+            cancelled_count = 0
             for task in tasks:
                 if not task.done():
                     task.cancel()
-                    cancelled += 1
+                    cancelled_count += 1
             
-            logger.debug(f"Timeout - cancelled {cancelled} tasks")
+            logger.debug(f"Deep search Timeout - cancelled {cancelled_count} tasks.")
             
-            # Return partial results immediately
-            for result in valid_results:
-                if "full_content" not in result:
-                    result["full_content"] = ""
-            return valid_results[:k]
+            partial_results = []
+            for i, task in enumerate(tasks):
+                if task.done():
+                    try:
+                        result = task.result()
+                        if isinstance(result, Exception):
+                             original_result = initial_results_copy[i]
+                             original_result["full_content"] = ""
+                             partial_results.append(original_result)
+                        else:
+                            partial_results.append(result)
+                    except asyncio.CancelledError:
+                        original_result = initial_results_copy[i]
+                        original_result["full_content"] = ""
+                        partial_results.append(original_result)
+                    except Exception as e:
+                        original_result = initial_results_copy[i]
+                        original_result["full_content"] = ""
+                        partial_results.append(original_result)
+                else:
+                    original_result = initial_results_copy[i]
+                    original_result["full_content"] = ""
+                    partial_results.append(original_result)
+            return partial_results[:k]
+        except Exception as e:
+            logger.error(f"Unexpected error in _deep_search_blazing: {e}")
+            for result in initial_results_copy:
+                result["full_content"] = ""
+            return initial_results_copy[:k]
+        finally:
+            # Ensure the session and thread-local connector are closed within the same event loop they were created.
+            if session and not session.closed:
+                await session.close()
+                logger.debug(f"Closed deep search ClientSession in thread {threading.current_thread().name}")
+            if hasattr(self._thread_local_connector, 'conn') and not self._thread_local_connector.conn.closed:
+                await self._thread_local_connector.conn.close()
+                logger.debug(f"Closed TCPConnector in deep search for thread {threading.current_thread().name}")
+
 
     def search_result(
         self, query: str, k: int = 6, backend: str = "text", deep_search: bool = True
     ) -> List[Dict]:
-        """Blazing fast search with maximum performance"""
+        """Blazing fast search with maximum performance.
+        This method handles bridging sync calls to async operations efficiently."""
         start_time = time.time()
-        logger.info("Starting blazing search...")
+        logger.info(f"Starting blazing search for query: '{query}'")
         
-        # Get initial results
         try:
             results = self.search_engine.invoke(query)
+            if not results:
+                logger.info(f"No initial results found for query: '{query}'.")
+                return []
         except Exception as e:
-            logger.error(f"Search error: {e}")
+            logger.error(f"DuckDuckGo search invocation error: {e}")
             return []
         
-        if not deep_search or not results:
+        if not deep_search:
             search_time = time.time() - start_time
-            logger.info(f"⚡ Basic search: {search_time:.3f}s")
+            logger.info(f"⚡ Basic search complete: {search_time:.3f}s")
             return results[:k]
         
-        logger.info("Deep processing...")
+        logger.info(f"Initiating deep processing for {len(results)} initial results...")
         
-        # Ultra-fast async execution with optimized event loop handling
         try:
-            # Check if we're already in an async context
-            try:
-                current_loop = asyncio.get_running_loop()
-                # Use thread pool for isolation and maximum speed
-                with concurrent.futures.ThreadPoolExecutor(
-                    max_workers=1, 
-                    thread_name_prefix="blazing"
-                ) as executor:
-                    def run_isolated():
-                        # Create dedicated event loop for maximum performance
-                        isolated_loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(isolated_loop)
-                        try:
-                            return isolated_loop.run_until_complete(
-                                self._deep_search_blazing(results, k)
-                            )
-                        finally:
-                            isolated_loop.close()
-                    
-                    future = executor.submit(run_isolated)
-                    final_results = future.result(timeout=2.0)  # Reduced timeout
-                    
-            except RuntimeError:
-                # No event loop - run directly with optimizations
-                final_results = asyncio.run(
-                    self._deep_search_blazing(results, k),
-                    debug=False  # Disable debug for speed
-                )
-            
+            def _run_deep_search_isolated_wrapper():
+                # This function runs in a separate thread managed by _sync_executor.
+                # asyncio.run handles loop creation, setting, running, and closing.
+                # _deep_search_blazing will create and close its own thread-local connector and session.
+                return asyncio.run(self._deep_search_blazing(results, k))
+
+            future = self._sync_executor.submit(_run_deep_search_isolated_wrapper)
+            final_results = future.result(timeout=2.5) # This timeout protects the calling thread
+
             search_time = time.time() - start_time
-            logger.info(f"🚀 Blazing search complete: {search_time:.3f}s")
+            logger.info(f"🚀 Blazing deep search complete: {search_time:.3f}s")
             return final_results
                 
+        except concurrent.futures.TimeoutError:
+            logger.error(f"Deep search thread timed out after 2.5s for query: '{query}'. Returning partial results.")
+            for res in results[:k]:
+                if "full_content" not in res:
+                    res["full_content"] = ""
+            return results[:k]
         except Exception as e:
-            logger.error(f"Blazing search error: {e}")
-            search_time = time.time() - start_time
-            logger.info(f"⚡ Fallback complete: {search_time:.3f}s")
+            logger.error(f"Blazing deep search error for query '{query}': {e}. Returning initial results.")
+            for res in results[:k]:
+                res["full_content"] = ""
             return results[:k]
 
 
     def today_new(self, category: str) -> List[Dict]:
-        """Lightning news retrieval"""
+        """Lightning news retrieval."""
         category_queries = {
             "technology": "latest tech science AI news",
             "finance": "latest finance market news", 
@@ -384,51 +431,50 @@ class DuckSearch:
         }
         
         query = category_queries.get(category, "latest breaking news")
-        return self.news_engine.invoke(query)
+        try:
+            return self.news_engine.invoke(query)
+        except Exception as e:
+            logger.error(f"News search error for category '{category}': {e}")
+            return []
 
     def clear_cache(self):
-        """Aggressive cache clearing"""
+        """Aggressive cache clearing."""
+        logger.info("Clearing all internal caches.")
         self._content_cache.clear()
         self._failed_urls.clear()
         self._url_cache.clear()
         self._is_valid_url_cached.cache_clear()
-        gc.collect()  # Force garbage collection
+        gc.collect()
 
     async def cleanup(self):
-        """Ultra-fast cleanup"""
-        cleanup_tasks = []
+        """Ultra-fast asynchronous cleanup of resources."""
+        logger.info("Starting DuckSearch cleanup...")
         
-        with self._session_lock:
-            sessions_to_close = list(self._session_pool)
-            self._session_pool.clear()
-        
-        for session in sessions_to_close:
-            if not session.closed:
-                cleanup_tasks.append(session.close())
-        
-        if cleanup_tasks:
-            await asyncio.gather(*cleanup_tasks, return_exceptions=True)
+        # All session and connector cleanup is handled within the async functions
+        # (_warmup_sessions, _deep_search_blazing) and their finally blocks.
+        # We just need to ensure the executors themselves shut down gracefully.
         
         self.clear_cache()
         
-        # Shutdown background executor
-        self._background_executor.shutdown(wait=False)
+        if self._background_executor:
+            # wait=True ensures tasks complete, allowing their finally blocks to run.
+            self._background_executor.shutdown(wait=True, cancel_futures=True) 
+            logger.debug("Background executor shutdown complete.")
+        if self._sync_executor:
+            self._sync_executor.shutdown(wait=True, cancel_futures=True)
+            logger.debug("Sync executor shutdown complete.")
+        
+        logger.info("DuckSearch cleanup complete.")
 
     def __del__(self):
-        """Fast cleanup on deletion"""
+        """Fast cleanup on object deletion - best effort, as async cleanup is preferred."""
         try:
-            if hasattr(self, '_session_pool') and self._session_pool:
-                try:
-                    loop = asyncio.get_event_loop()
-                    if loop.is_running():
-                        # Schedule cleanup without waiting
-                        for session in self._session_pool:
-                            if not session.closed:
-                                loop.create_task(session.close())
-                except:
-                    pass
-            
-            if hasattr(self, '_background_executor'):
+            # Initiate shutdown for executors, but don't wait in __del__ as it can block.
+            if hasattr(self, '_background_executor') and self._background_executor:
                 self._background_executor.shutdown(wait=False)
-        except:
-            pass
+            if hasattr(self, '_sync_executor') and self._sync_executor:
+                self._sync_executor.shutdown(wait=False)
+            
+            # Note: No session/connector closing here anymore. This is handled by the async methods.
+        except Exception as e:
+            logger.debug(f"Error during __del__ cleanup: {e}")

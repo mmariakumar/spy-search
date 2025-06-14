@@ -356,6 +356,7 @@ async def stream_data(
     if needs_search:
         # Start search operations immediately
         async def search_pipeline():
+            """
             current_query, context = smart_message_processing(validated_messages)
             search_keywords = await asyncio.to_thread(
                 extract_keywords,
@@ -364,8 +365,9 @@ async def stream_data(
                 previous_context=context,
                 context_weight=0.2
             )
+            """
             search_instance = DuckSearch()
-            return await asyncio.to_thread(search_instance.search_result, search_keywords)
+            return await asyncio.to_thread(search_instance.search_result, query)
         
         search_task = asyncio.create_task(search_pipeline())
         tasks = [model_task, search_task]
