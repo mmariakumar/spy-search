@@ -19,7 +19,7 @@ class DuckSearch:
             backend="text", output_format="list"
         )
         self.news_engine = DuckDuckGoSearchResults(
-            backend="news", output_format="list", num_results=9
+            backend="news", output_format="list", num_results=8
         )
         # Global session pool for maximum performance
         self._session_pool: List[aiohttp.ClientSession] = []
@@ -49,9 +49,9 @@ class DuckSearch:
                 
                 # Hyper-aggressive timeouts
                 timeout = aiohttp.ClientTimeout(
-                    total=1.5,      # Ultra-short total timeout
+                    total=1.25,      # Ultra-short total timeout
                     connect=0.5,    # Lightning connect
-                    sock_read=1.0   # Fast read
+                    sock_read=0.9   # Fast read
                 )
                 
                 session = aiohttp.ClientSession(
