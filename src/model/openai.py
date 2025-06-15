@@ -54,6 +54,11 @@ class OpenAI(Model):
                 messages=self.messages,
                 stream=True,
                 temperature=0.7,
+                extra_body={
+                    "provider": {
+                        "allow_fallbacks": True
+                    }
+                }
             )
 
             buffer = []

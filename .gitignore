@@ -11,3 +11,4 @@ local_files/
 uv.lock
 .python-version
 messages.json
+config.json
