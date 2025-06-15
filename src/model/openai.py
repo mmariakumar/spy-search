@@ -56,6 +56,7 @@ class OpenAI(Model):
                 temperature=0.7,
                 extra_body={
                     "provider": {
+                        "order": ["cerebras","groq"], 
                         "allow_fallbacks": True
                     }
                 }
