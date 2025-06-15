@@ -15,7 +15,7 @@ template = Template("""
 
 ## Overall Summary
 
-<<Generate a concise overall summary of the combined search results here>>
+<<Write a clear, concise 3-5 sentence summary synthesizing all results with APA-style citations.>>
 
 ---
 
@@ -27,38 +27,29 @@ $results
 
 ## Instructions for Response
 
-1. Begin your response by printing the current date and time in the format **YYYY-MM-DD HH:MM:SS** as a timestamp.
-2. Generate a brief overall summary of all search results combined (4-5 sentences) where indicated above.
-3. Then, list each search result with:  
-   - A numbered clickable link in Markdown format: `[Title](URL)`  
-   - A concise, relevant summary immediately below the link.
-4. Ensure each summary includes exactly one clickable Markdown URL — no duplicates or raw URLs outside the link.
-5. Keep all summaries clear, professional, and focused on the query.
-6. Avoid unnecessary filler; keep responses concise.
-7. Use APA-style inline citations when appropriate.
-8. Format your full response as Markdown, starting with the timestamp and overall summary, followed by the numbered list of results.
+1. Start with current date/time in **YYYY-MM-DD HH:MM:SS**.
+2. Provide a brief, professional overall summary (3-5 sentences).
+3. For each result, include:
+   - Numbered clickable Markdown link `[Title](URL)`
+   - Short summary below with one clickable link.
+4. Use APA-style citations.
+5. Format response fully in Markdown.
+6. Avoid filler; keep summaries focused and clear.
 
 ---
 
-**Example Output:**
+**Example:**
 
 **Timestamp:** 2025-06-14 14:23:05
 
 ### Overall Summary
 
-The Example Domain is a reserved domain used for illustrative examples in documents. It allows free use without prior permission.
+Example Domain is a reserved domain for illustrative examples, freely usable without permission (Example Domain, n.d.).
 
 ### Detailed Search Results
 
 1. [Example Domain](https://example.com)  
-This domain is intended for use in illustrative examples within documents. You may use it freely without prior coordination or permission (Example Domain, n.d.) [Example Domain](https://example.com).
-
-2. [Another Link](https://another.com)  
-Brief summary of content on another link.
-
----
-
-Your final response must start with the current timestamp, then an overall summary, and finally a numbered list of clickable links with concise summaries in Markdown format.
+Used for examples in documents, free to use without prior consent (Example Domain, n.d.) [Example Domain](https://example.com).
 """)
 
 
@@ -138,4 +129,5 @@ def quick_search_prompt(query, data, timestamp=None):
     if language == 'ch':
         return template_ch.substitute(timestamp=timestamp, query=query, results=data)
     else:
+        print(template.substitute(timestamp=timestamp, query=query, results=data))
         return template.substitute(timestamp=timestamp, query=query, results=data)
