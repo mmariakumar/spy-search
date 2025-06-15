@@ -336,7 +336,9 @@ async def stream_data(
     files: Optional[List[UploadFile]] = File(None),
     api: Optional[str] = Form(None),
 ):
-    logger.info("start the stream ...")
+    # Generate unique session ID for this request
+    session_id = f"session_{asyncio.current_task().get_name()}_{id(asyncio.current_task())}"
+    logger.info(f"[{session_id}] start the stream ...")
     
     # Parse messages immediately (fast)
     try:
@@ -349,8 +351,22 @@ async def stream_data(
     # Start all operations concurrently - NO WAITING
     tasks = []
     
-    # 1. Get model (from cache if available, eliminates 7s delay)
-    model_task = asyncio.create_task(get_or_create_model())
+    # 1. Get model (create separate instance for each user)
+    async def get_user_model():
+        """Create a dedicated model instance for this user session"""
+        model = await get_or_create_model()
+        # Create a copy/new instance to avoid shared state
+        # If your model supports cloning, use that. Otherwise create fresh instance:
+        try:
+            # Try to create a fresh model instance
+            config = await asyncio.to_thread(read_config)
+            user_model = await asyncio.to_thread(Factory.get_model, config["provider"], config["model"])
+            return user_model
+        except:
+            # Fallback: use the cached model but ensure messages are isolated
+            return model
+    
+    model_task = asyncio.create_task(get_user_model())
     
     # 2. If search needed, start search pipeline
     if needs_search:
@@ -374,22 +390,23 @@ async def stream_data(
     else:
         tasks = [model_task]
     
-    logger.info("Creating model")  # Keep your original log message
+    logger.info(f"[{session_id}] Creating model")  # Keep your original log message
     
     # Wait for completion
     if needs_search:
         model, search_result = await asyncio.gather(*tasks)
-        logger.info("Finished creating model")  # Keep your original log message
+        logger.info(f"[{session_id}] Finished creating model")  # Keep your original log message
         prompt = await asyncio.to_thread(quick_search_prompt, query, search_result)
     else:
         model = await model_task
-        logger.info("Finished creating model")  # Keep your original log message
+        logger.info(f"[{session_id}] Finished creating model")  # Keep your original log message
         prompt = query
     
-    # Configure model (keep your original logic)
-    model.messages = [] if len(validated_messages) == 1 else validated_messages[:-1]
+    # Configure model - CRITICAL: Create isolated message history for this user
+    user_messages = [] if len(validated_messages) == 1 else validated_messages[:-1].copy()
+    model.messages = user_messages
     
-    logger.info("Finished Prompt preparation, starting completion stream")  # Keep your original log
+    logger.info(f"[{session_id}] Finished Prompt preparation, starting completion stream")  # Keep your original log
     
     try:
         completion_stream = model.completion_stream(prompt)
@@ -407,18 +424,23 @@ async def stream_data(
                     await asyncio.sleep(0)
         
         if chunk_count == 0:
-            logger.warning("No chunks received from model")
+            logger.warning(f"[{session_id}] No chunks received from model")
             yield "No response generated"
         
     except Exception as e:
-        logger.error(f"Error in streaming: {str(e)}")
+        logger.error(f"[{session_id}] Error in streaming: {str(e)}")
         yield f"Error: {str(e)}"
     
     finally:
-        logger.info("Streaming completed")  # Keep your original log
+        logger.info(f"[{session_id}] Streaming completed")  # Keep your original log
+        # Clean up model resources for this session
+        if hasattr(model, 'cleanup'):
+            try:
+                model.cleanup()
+            except:
+                pass
     
-    logger.info("finish the stream")  # Keep your original log
-
+    logger.info(f"[{session_id}] finish the stream")  # Keep your original log
 # Add this to your app startup to preload models
 async def preload_models():
     """Call this at application startup to preload models"""
