@@ -5,6 +5,11 @@ import logging
 from ..models.schemas import Message
 from ..core.config import read_config
 
+from ...factory import Factory
+from ...generate_report import generate_report
+from ...model import Model
+from ...agent import Planner , Agent
+
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
@@ -86,8 +91,6 @@ async def quick_response_logic(
 ):
     """Quick response logic - original function"""
     config = read_config()
-    from ...factory import Factory
-    from ...model import Model
     
     quick_model: Model = Factory.get_model(config["provider"], config["model"])
     quick_model.messages = messages[::-1]
@@ -108,9 +111,6 @@ async def main(query, api: str = None):
     config = read_config()
     logging.info("finish reading config ...")
     
-    from ...factory import Factory
-    from ...agent import Planner
-    from ...main import generate_report
     
     m = Factory.get_model(config["provider"], config["model"])
     planner = Planner(m)

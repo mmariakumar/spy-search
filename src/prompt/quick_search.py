@@ -134,7 +134,6 @@ def load_config_language(config_path='./config.json'):
 def quick_search_prompt(query, data, timestamp=None):
     if timestamp is None:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
     language = load_config_language()
     if language == 'ch':
         return template_ch.substitute(timestamp=timestamp, query=query, results=data)

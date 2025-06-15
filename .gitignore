@@ -12,3 +12,4 @@ uv.lock
 .python-version
 messages.json
 venv
+config.json
