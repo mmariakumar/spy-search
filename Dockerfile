@@ -27,14 +27,24 @@ RUN apt-get update && apt-get install -y \
     dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy all files first
-COPY . .
+# Install uv globally first
+RUN pip install uv
+
+# Copy requirements first for better caching
+COPY requirements.txt ./
+COPY frontend/package*.json ./frontend/
+
+# Copy scripts
+COPY installation.sh run.sh ./
 
 # Convert line endings for shell scripts
 RUN dos2unix installation.sh run.sh && \
     sed -i 's/\r$//' installation.sh && \
     sed -i 's/\r$//' run.sh && \
     chmod +x installation.sh run.sh
+
+# Copy the rest of the application
+COPY . .
 
 # Run installation.sh to install python packages, playwright, npm deps, etc.
 RUN /bin/sh installation.sh

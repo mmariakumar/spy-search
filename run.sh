@@ -6,7 +6,6 @@ cleanup() {
   kill $BACKEND_PID $FRONTEND_PID 2>/dev/null
   exit 1
 }
-
 trap cleanup SIGINT SIGTERM
 
 # Check if virtual environment exists and activate it
@@ -49,7 +48,15 @@ echo "Starting frontend..."
   else
     echo "npm dependencies already installed"
   fi
-  npm run dev
+  
+  # Set environment variables for host binding
+  export HOST=0.0.0.0
+  export PORT=8080
+  
+  # Start frontend with host binding (this works for most frameworks)
+  npm run dev -- --host 0.0.0.0 --port 8080 2>/dev/null || \
+  npm run dev -- -H 0.0.0.0 -p 8080 2>/dev/null || \
+  HOST=0.0.0.0 PORT=8080 npm run dev
 ) &
 FRONTEND_PID=$!
 
@@ -64,6 +71,8 @@ fi
 
 echo "Backend PID: $BACKEND_PID"
 echo "Frontend PID: $FRONTEND_PID"
+echo "Backend accessible at: http://localhost:8000"
+echo "Frontend accessible at: http://localhost:8080"
 
 # Wait for both processes to exit
 wait $BACKEND_PID $FRONTEND_PID
