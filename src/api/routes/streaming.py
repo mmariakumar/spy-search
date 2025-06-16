@@ -7,6 +7,7 @@ import logging
 from ..models.schemas import Message
 from ..core.model_cache import get_user_model
 from ..core.config import read_config
+from ...prompt.quick_search import quick_search_prompt
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -40,7 +41,6 @@ async def stream_data(
             search_task = asyncio.create_task(search_pipeline())
             model, search_result = await asyncio.gather(model_task, search_task)
             
-            from ...prompt.quick_search import quick_search_prompt
             prompt = await asyncio.to_thread(quick_search_prompt, query, search_result)
         else:
             model = await model_task

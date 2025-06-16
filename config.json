@@ -1,6 +1,6 @@
 {
     "provider": "openai",
-    "model": "deepseek/deepseek-r1-distill-llama-70b",
+    "model": "meta-llama/llama-3.3-70b-instruct",
     "agents": [
         "reporter",
         "searcher"
