@@ -196,7 +196,7 @@ class DuckSearch:
                 
             # Check if we're already close to time limit
             elapsed = time.time() - start_time
-            if elapsed > 0.3:  # If basic search took too long, skip deep search
+            if elapsed > 1.5:  # If basic search took too long, skip deep search
                 logger.warning(f"Basic search took {elapsed:.3f}s - skipping deep search")
                 for result in results:
                     result["full_content"] = ""
