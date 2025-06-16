@@ -30,14 +30,13 @@ class BLIPModel:
         return self.processor.decode(output[0], skip_special_tokens=True)
 
 
-def read_config():
-    with open("C:/Users/User/Desktop/code/spy-search/config.json", "r") as file:
-        content = file.read()
-        config = json.loads(content)
-    return config
 
 class Vision(Agent):
-    def __init__(self, model, db="./local_files"):
+    """
+    a vision agent should able to visually watch something
+    in the base case it can watch video or photos provides by the user
+    """
+    def __init__(self, model: Model, db="./local_files"):
         self.model = model
         config = read_config()
         self.db = config.get("db", db)
@@ -153,3 +152,4 @@ class Vision(Agent):
             },
             "required": ["task", "results"]
         }
+

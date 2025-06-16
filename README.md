@@ -32,15 +32,18 @@ Add your API key in the .env file if you want to use API. Currently we support o
 config the config.json file, you may copy the following template
 ```json
 {
-    "provider": "ollama",
-    "model": "deepseek-r1:7b",
+    "provider": "openai",
+    "model": "",
     "agents": [
-        "reporter"
-    ]
+        "reporter",
+        "searcher"
+    ],
+    "db": "./local_files/test",
+    "base_url": "https://openrouter.ai/api/v1"
 }
 ```
 
-After that run 
+After that run (due to some problem some computers espically using ollama may have some issue) If you are a developer we strongly suggest you follow the guide from contributing .md which is much more convience. 
 ```shell
 docker build -t spy-searcher .   
 docker run -p 8000:8000 -p 8080:8080 spy-searcher
@@ -54,18 +57,15 @@ Now you can access
 [Discord](https://discord.gg/rrsMgBdJJt)
 
 
-## Example 
-
-- [Example Report (HTML)](./docs/examples/example_report.html)
-
-![Example Search](./docs/examples/example_search.png)
-
 ## Demo Video
 
 Watch the demo video on YouTube:
 
 
-https://github.com/user-attachments/assets/32cbcd0e-6993-41a9-8039-5216b84ed866
+https://github.com/user-attachments/assets/3e6ef332-d055-421c-bf0a-5f866ba52b11
+
+
+
 
 [old version video](https://www.youtube.com/watch?v=Dgb33BHtRwQ)
 

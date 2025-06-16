@@ -1,16 +1,13 @@
-"""
-This is the main function of the agent
-"""
-from src.agent import Planner, Agent
-from src.router import Server, Router
+from .agent import Planner, Agent
+from .router import Server, Router
 
-import logging
+import logging 
 
 logger = logging.getLogger(__name__)
 
 async def generate_report(query, planner: Planner, agents: list[Agent]):
     """
-    TODO : multi debate framwork
+    TODO : refactor 
     """
     planner.query = query
     server = Server()
@@ -32,5 +29,3 @@ async def generate_report(query, planner: Planner, agents: list[Agent]):
     report = report["data"]
 
     return report
-
-
