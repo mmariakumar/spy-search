@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Trap SIGINT (Ctrl-C) and SIGTERM to kill child processes
 cleanup() {
@@ -11,7 +11,11 @@ trap cleanup SIGINT SIGTERM
 # Check if virtual environment exists and activate it
 if [ -d ".venv" ]; then
   echo "Activating virtual environment..."
-  . .venv/bin/activate || { echo "Failed to activate virtual environment"; exit 1; }
+  . .venv/bin/activate
+  if [ $? -ne 0 ]; then
+    echo "Failed to activate virtual environment"
+    exit 1
+  fi
 else
   echo "Virtual environment not found. Please run the setup script first."
   exit 1
@@ -20,7 +24,11 @@ fi
 # Check if uvicorn is installed
 if ! command -v uvicorn >/dev/null 2>&1; then
   echo "uvicorn not found, installing..."
-  uv pip install uvicorn || { echo "Failed to install uvicorn"; exit 1; }
+  uv pip install uvicorn
+  if [ $? -ne 0 ]; then
+    echo "Failed to install uvicorn"
+    exit 1
+  fi
 fi
 
 # Start backend
@@ -40,23 +48,35 @@ fi
 # Start frontend
 echo "Starting frontend..."
 (
-  cd frontend || { echo "Failed to cd to frontend directory"; exit 1; }
+  cd frontend
+  if [ $? -ne 0 ]; then
+    echo "Failed to cd to frontend directory"
+    exit 1
+  fi
   # Install npm dependencies only if node_modules is missing
   if [ ! -d "node_modules" ]; then
     echo "Installing npm dependencies..."
-    npm install --legacy-peer-deps || { echo "npm install failed"; exit 1; }
+    npm install --legacy-peer-deps
+    if [ $? -ne 0 ]; then
+      echo "npm install failed"
+      exit 1
+    fi
   else
     echo "npm dependencies already installed"
   fi
-  
+
   # Set environment variables for host binding
   export HOST=0.0.0.0
   export PORT=8080
-  
+
   # Start frontend with host binding (this works for most frameworks)
-  npm run dev -- --host 0.0.0.0 --port 8080 2>/dev/null || \
-  npm run dev -- -H 0.0.0.0 -p 8080 2>/dev/null || \
-  HOST=0.0.0.0 PORT=8080 npm run dev
+  npm run dev -- --host 0.0.0.0 --port 8080 2>/dev/null
+  if [ $? -ne 0 ]; then
+    npm run dev -- -H 0.0.0.0 -p 8080 2>/dev/null
+    if [ $? -ne 0 ]; then
+      HOST=0.0.0.0 PORT=8080 npm run dev
+    fi
+  fi
 ) &
 FRONTEND_PID=$!
 
