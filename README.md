@@ -3,15 +3,15 @@
 **Spy Search** is an agentic search framework designed to outperform current web search agents with a focus on faster, more efficient daily usage.
 
 While commercial solutions like Manus charge $200 per month, Spy Search leverages open-source models to provide a cost-effective alternative without sacrificing performance.
-Currently our searching-speed is quite slow yet we can generate a long length consistent report (around 2000 words) with latest current information! This problem will be tackle after the release of v1.0. 
+Currently our searching-speed is quite slow yet we can generate a long length consistent report (around 2000 words) with latest current information! This problem will be tackle after the release of v1.0.
 
-##### [簡體中文](./docs/ch_simplify.md) 
+##### [簡體中文](./docs/ch_simplify.md)
 ##### [繁體中文](./docs/ch_complex.md)
 ##### [日本語](./docs/jap.md)
 ---
 
 ## Roadmap
-**News**: 2025-06-10 Spy-searcher has just released v0.3 ! 
+**News**: 2025-06-10 Spy-searcher has just released v0.3 !
 
 ---
 
@@ -22,38 +22,64 @@ git clone https://github.com/JasonHonKL/spy-search.git
 cd spy-search
 ```
 
-To set up just run 
+To set up just run
 ```shell
 python setup.py
 ```
 
-Add your API key in the .env file if you want to use API. Currently we support openAI, Claude, Gork & Deepseek. If you use ollama you don't need to do anything. 
+Add your API key in the .env file if you want to use API. Currently we support openAI, Claude, Gork & Deepseek.
 
-config the config.json file, you may copy the following template
+Configure the `config.json` file for your local setup. You can copy the example configuration:
+
+```bash
+cp config.example.json config.json
+```
+
+Then edit `config.json` to match your environment.
+
+### Ollama
+
+If you use Ollama, here's an example of `config.json`:
+
 ```json
 {
-    "provider": "openai",
-    "model": "",
+    "provider": "ollama",
+    "model": "qwen3:8b",
     "agents": [
-        "reporter",
-        "searcher"
+        "reporter"
     ],
     "db": "./local_files/test",
-    "base_url": "https://openrouter.ai/api/v1"
+    "base_url": "http://host.docker.internal:11434",
+    "language": "en"
 }
 ```
 
-After that run (due to some problem some computers espically using ollama may have some issue) If you are a developer we strongly suggest you follow the guide from contributing .md which is much more convience. 
+### Docker Build
+
+Build and run the application using Docker. This method is recommended for most users as it handles all dependencies automatically:
+
 ```shell
-docker build -t spy-searcher .   
+docker build -t spy-searcher .
 docker run -p 8000:8000 -p 8080:8080 -e OLLAMA_HOST=host.docker.internal spy-searcher
 ```
 
-Now you can access  
+**What this does:**
+- **`docker build`**: Creates a container image with all Python dependencies, Node.js, and Playwright browsers
+- **`docker run`**: Starts the container with:
+  - **Port 8000**: Backend API (FastAPI)
+  - **Port 8080**: Frontend (React/Vite)
+  - **OLLAMA_HOST**: Connects to your local Ollama installation
+
+**Prerequisites:**
+- Docker installed on your system
+- Ollama running locally (if using Ollama provider)
+- The model specified in your `config.json` available in Ollama (e.g., `qwen3:8b`)
+
+Now you can access
 [http://localhost:8000](http://localhost:8080)
 
 
-## Community 
+## Community
 [Discord](https://discord.gg/rrsMgBdJJt)
 
 
@@ -99,5 +125,5 @@ Maintainers will acknowledge your issue, label it appropriately, and work on res
 Thank you for helping improve this project! Your contributions make a difference.
 
 
-## Thank you everyone's support :) 
+## Thank you everyone's support :)
 [![Star History Chart](https://api.star-history.com/svg?repos=JasonHonKL/spy-search&type=Date)](https://star-history.com/#JasonHonKL/spy-search&Date)
