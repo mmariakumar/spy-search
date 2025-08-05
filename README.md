@@ -5,7 +5,7 @@
 While commercial solutions like Manus charge $200 per month, Spy Search leverages open-source models to provide a cost-effective alternative without sacrificing performance.
 Currently our searching-speed is quite slow yet we can generate a long length consistent report (around 2000 words) with latest current information! This problem will be tackle after the release of v1.0.
 
-##### [簡體中文](./docs/ch_simplify.md)
+##### [简体中文](./docs/ch_simplify.md)
 ##### [繁體中文](./docs/ch_complex.md)
 ##### [日本語](./docs/jap.md)
 ---
@@ -27,7 +27,7 @@ To set up just run
 python setup.py
 ```
 
-Add your API key in the .env file if you want to use API. Currently we support openAI, Claude, Gork & Deepseek.
+Add your API key in the .env file if you want to use API. Currently we support openAI, Claude, Gork & DeepSeek.
 
 Configure the `config.json` file for your local setup. You can copy the example configuration:
 
@@ -59,25 +59,33 @@ If you use Ollama, here's an example of `config.json`:
 Build and run the application using Docker. This method is recommended for most users as it handles all dependencies automatically:
 
 ```shell
-docker build -t spy-searcher .
-docker run -p 8000:8000 -p 8080:8080 -e OLLAMA_HOST=host.docker.internal spy-searcher
+# Build and start the container
+docker-compose up --build
+
+# Or run in background
+docker-compose up -d --build
 ```
 
-**What this does:**
-- **`docker build`**: Creates a container image with all Python dependencies, Node.js, and Playwright browsers
-- **`docker run`**: Starts the container with:
-  - **Port 8000**: Backend API (FastAPI)
-  - **Port 8080**: Frontend (React/Vite)
-  - **OLLAMA_HOST**: Connects to your local Ollama installation
-
 **Prerequisites:**
-- Docker installed on your system
-- Ollama running locally (if using Ollama provider)
-- The model specified in your `config.json` available in Ollama (e.g., `qwen3:8b`)
+- **Docker**: Install from [docker.com](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
+- **Docker Compose**: Usually included with Docker Desktop. If not, install separately:
+  ```bash
+  # Ubuntu/Debian
+  sudo apt-get install docker-compose-plugin
 
-Now you can access
-[http://localhost:8000](http://localhost:8080)
+  # Or check if installed
+  docker-compose --version
+  ```
+- **Ollama**: Running locally (if using Ollama provider)
+- **Model**: The model specified in your `config.json` available in Ollama (e.g., `qwen3:8b`)
 
+### Updating Configuration (Docker Compose)
+
+Changes to `config.json` are automatically synced and take effect immediately - no restart needed.
+
+Now you can access:
+- **Backend API**: [http://localhost:8000](http://localhost:8000)
+- **Frontend**: [http://localhost:8080](http://localhost:8080)
 
 ## Community
 [Discord](https://discord.gg/rrsMgBdJJt)
