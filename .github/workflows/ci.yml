@@ -29,7 +29,7 @@ jobs:
 
   frontend-smoke:
     name: Frontend smoke (install only)
-    if: ${{ hashFiles('frontend/package.json') != '' }}
+    if: ${{ exists('frontend/package.json') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
