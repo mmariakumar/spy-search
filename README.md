@@ -1,4 +1,4 @@
-# Spy Search
+# Spy Search 
 
 **Spy Search** is an agentic search framework designed to outperform current web search agents with a focus on faster, more efficient daily usage.
 
