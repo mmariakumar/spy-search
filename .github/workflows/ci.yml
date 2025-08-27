@@ -29,7 +29,6 @@ jobs:
 
   frontend-smoke:
     name: Frontend smoke (install only)
-    if: ${{ exists('frontend/package.json') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,9 +37,9 @@ jobs:
           node-version: 20
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install
-        working-directory: frontend
-        run: npm ci
-      - name: Build (only if script exists)
-        working-directory: frontend
-        run: npm run build --if-present
+      - name: Install (skip if no package.json)
+        run: |
+          if [ -f frontend/package.json ]; then cd frontend && npm ci; else echo "No frontend/package.json"; fi
+      - name: Build (skip if no build script)
+        run: |
+          if [ -f frontend/package.json ]; then cd frontend && npm run build --if-present; else echo "Skipping build"; fi
