@@ -1,12 +1,13 @@
-name: CI Demo
+name: CI
 on:
   push:
     branches: [ main ]
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  echo:
+  hello:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Hello from CI"
+      - run: echo "CI is working ✅"
